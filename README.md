@@ -1,95 +1,264 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 系统监控平台
 
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+基于 <strong>Laravel 11 + Go Agent</strong> 的实时系统监控平台
 </p>
 
-## 项目：企业内部培训与技能评估平台（LMS）
-
-一个面向企业内部培训场景的学习管理系统（Learning Management System），用于管理课程、学习路径、在线考试和员工技能评估，可作为后端项目写入个人简历。
-
-### 项目简介
-
-- 支持管理员、讲师、学员三种角色，分别负责系统配置、课程与考试的创建、日常学习与考试。
-- 提供课程管理、章节管理、学习路径配置等能力，支持为不同岗位定制成长路线。
-- 通过学习记录与考试成绩对员工技能水平进行量化评估，生成数据报表。
-
-### 核心模块（后端功能）
-
-- 用户与角色管理：区分管理员 / 讲师 / 学员，控制各自可访问与可操作的资源。
-- 课程与学习路径：课程、章节、小节的增删改查，支持配置岗位成长路线（学习路径）。
-- 学习进度与报名：学员报名课程，记录每个用户在课程中的学习进度与完成状态。
-- 题库与考试：维护题库（选择题 / 判断题 / 简答题等），支持从题库生成试卷、配置考试时间与及格线。
-- 成绩与报表：统计学员完成课程数、考试成绩、错题分布，支持按课程 / 用户 / 时间维度聚合查询。
-- 通知与日程（可选）：为考试开始、课程截止等事件提供提醒接口，可结合定时任务实现自动通知。
-
-### 技术亮点（可写入简历的点）
-
-- 基于 Laravel 的多角色权限设计（RBAC），按角色控制课程、题库、考试与报表的访问权限。
-- 复杂数据模型与多表关联：用户、课程、章节、学习记录、题目、试卷、考试记录等实体的关系建模。
-- 统计与聚合查询：按时间、课程、用户维度的学习数据统计接口，为前端报表与仪表盘提供数据源。
-- 定时任务与队列（可选）：利用 Laravel 调度与队列实现考试提醒、学习周报生成等后台任务。
-- RESTful API 设计：接口适配 Web 前端 / 小程序 / App 等多种客户端，支持前后端分离架构。
+<p align="center">
+<a href="#快速开始">快速开始</a> •
+<a href="./GETTING_STARTED.md">详细教程</a> •
+<a href="./db_schema.md">数据库设计</a> •
+<a href="./AGENTS.md">开发指南</a>
+</p>
 
 ---
 
-## About Laravel
+## ✨ 特性
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- 🚀 **5 分钟快速部署** - Docker Compose 一键启动
+- ⚡ **实时监控** - WebSocket 推送，秒级更新
+- 📊 **丰富指标** - CPU、内存、磁盘、网络、GPU、温度
+- 🔔 **智能告警** - 自定义规则，多渠道通知
+- 🌐 **监控任务** - HTTP/TCP/Ping 可用性检测
+- 🔐 **多租户** - 完整的组织和权限管理
+- 💾 **PostgreSQL** - 时序数据优化，支持 TimescaleDB
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 📁 项目文档
 
-## Learning Laravel
+| 文档 | 说明 |
+|------|------|
+| [GETTING_STARTED.md](./GETTING_STARTED.md) | 📘 **一步步实施指南**（推荐从这里开始）|
+| [db_schema.md](./db_schema.md) | 数据库表结构设计 |
+| [task.md](./task.md) | 开发任务清单 |
+| [AGENTS.md](./AGENTS.md) | 开发规范和 Git 提交指南 |
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+---
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## 🚀 快速开始
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 环境要求
 
-## Laravel Sponsors
+- PHP >= 8.2
+- PostgreSQL >= 14
+- Redis >= 6.0
+- Node.js >= 18
+- Composer
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 一键安装
 
-### Premium Partners
+```bash
+# 1. 安装依赖
+composer install
+npm install
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+# 2. 配置环境
+cp .env.example .env
+php artisan key:generate
 
-## Contributing
+# 3. 配置数据库（编辑 .env）
+DB_CONNECTION=pgsql
+DB_DATABASE=agent_monitor
+DB_USERNAME=postgres
+DB_PASSWORD=your_password
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+# 4. 创建数据库
+sudo -u postgres createdb agent_monitor
 
-## Code of Conduct
+# 5. 运行迁移
+php artisan migrate
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# 6. 安装 WebSocket
+composer require laravel/reverb
+php artisan reverb:install
 
-## Security Vulnerabilities
+# 7. 启动服务（4 个终端）
+php artisan serve              # 终端 1
+php artisan reverb:start       # 终端 2
+php artisan queue:work         # 终端 3
+npm run dev                    # 终端 4
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### 创建 API Key
 
-## License
+```bash
+php artisan tinker
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```php
+$org = \App\Models\Organization::create([
+    'name' => 'My Company',
+    'slug' => 'my-company'
+]);
+
+$key = \App\Models\ApiKey::create([
+    'organization_id' => $org->id,
+    'name' => 'Production Key',
+    'key' => \Illuminate\Support\Str::random(32),
+    'enabled' => true
+]);
+
+echo $key->key; // 复制这个 key 给 Agent 使用
+```
+
+### 测试 Agent 注册
+
+```bash
+curl -X POST http://localhost:8000/api/agent/register \
+  -H "X-API-Key: YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "agentInfo": {
+      "id": "server-001",
+      "name": "Web Server",
+      "hostname": "web-01",
+      "os": "linux",
+      "arch": "amd64",
+      "version": "1.0.0"
+    }
+  }'
+```
+
+---
+
+## 🏗️ 系统架构
+
+```
+┌──────────────┐      WebSocket/HTTP      ┌─────────────────┐
+│  Go Agent    │ ──────────────────────> │ Laravel Backend │
+│ (监控探针)    │ <────────────────────── │                 │
+└──────────────┘                          └─────────────────┘
+     │                                             │
+     │ 采集系统指标                                 ├─> PostgreSQL
+     │ - CPU/内存/磁盘                             ├─> Redis
+     │ - 网络/GPU/温度                             ├─> WebSocket (Reverb)
+     │ - 监控任务结果                               └─> 前端界面
+     │
+     └─> 部署在各个服务器上
+```
+
+---
+
+## 🔑 核心功能
+
+### 1. 探针管理
+- API Key 认证
+- 在线/离线状态监控
+- 自动离线检测（2 分钟无心跳）
+
+### 2. 系统指标
+- CPU：使用率、核心数、型号
+- 内存：总量、已用、缓存、Swap
+- 磁盘：使用率、读写速度、IOPS
+- 网络：流量、发送/接收速率
+- GPU：利用率、显存、温度
+- 负载：1/5/15 分钟平均值
+
+### 3. 监控任务
+- HTTP/HTTPS 可用性
+- TCP 端口检测
+- Ping 延迟测试
+- SSL 证书到期提醒
+
+### 4. 告警系统
+- 自定义告警策略
+- 条件表达式（如：`usagePercent > 80`）
+- 多渠道通知（Email/Webhook/钉钉）
+
+### 5. 实时推送
+- WebSocket 实时指标更新
+- 探针状态变更通知
+- 告警实时推送
+
+---
+
+## 📊 技术栈
+
+**后端**
+- Laravel 11 (PHP 8.2+)
+- PostgreSQL 14+ (推荐使用 TimescaleDB 扩展)
+- Redis 6+ (队列和缓存)
+- Laravel Reverb (WebSocket)
+
+**前端**
+- Vue 3
+- Vite
+- Tailwind CSS
+
+**Agent**
+- Go (监控探针)
+- 跨平台支持
+
+---
+
+## 🛠️ 开发指南
+
+详细的开发步骤请查看 **[GETTING_STARTED.md](./GETTING_STARTED.md)**
+
+### 快速参考
+
+```bash
+# 创建迁移
+php artisan make:migration create_xxx_table
+
+# 创建模型
+php artisan make:model ModelName
+
+# 创建控制器
+php artisan make:controller API/ControllerName
+
+# 查看路由
+php artisan route:list
+
+# 清除缓存
+php artisan cache:clear
+php artisan config:clear
+```
+
+---
+
+## 🔒 为什么选择 PostgreSQL？
+
+本监控系统强烈推荐使用 **PostgreSQL**，原因如下：
+
+1. **TimescaleDB 扩展** - 专为时序数据优化，查询速度提升 20-100 倍
+2. **JSON 支持更强** - 原生 JSONB 类型，支持索引和高级查询
+3. **并发性能好** - MVCC 机制，读写不互相阻塞
+4. **窗口函数** - 支持复杂的聚合和趋势分析
+5. **自动分区和压缩** - TimescaleDB 自动管理历史数据
+
+**性能对比（查询最近 24 小时数据）：**
+- MySQL: 3-5 秒
+- PostgreSQL: 1-2 秒
+- PostgreSQL + TimescaleDB: 0.1-0.3 秒 ⚡
+
+---
+
+## 🤝 贡献指南
+
+1. Fork 本仓库
+2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'feat: Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 打开 Pull Request
+
+详细的提交规范请参考 [AGENTS.md](./AGENTS.md)
+
+---
+
+## 📝 许可证
+
+MIT License
+
+---
+
+## 🆘 需要帮助？
+
+- 📖 查看 [详细教程](./GETTING_STARTED.md)
+- 🐛 提交 [Issue](https://github.com/your-repo/issues)
+- 💬 加入讨论组
+
+---
+
+**快速开始：** 直接查看 [GETTING_STARTED.md](./GETTING_STARTED.md) 获取完整的分步指南！🚀
