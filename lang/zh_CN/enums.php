@@ -4,6 +4,14 @@ return [
     // HTTP 状态码描述（可选，包自带）
     // 自定义业务码描述
     ResponseCodeEnum::class => [
+        ResponseCodeEnum::SUCCESS => '操作成功',
+        ResponseCodeEnum::FAIL => '操作失败',
+        ResponseCodeEnum::SERVER_ERROR => '服务器错误',
+        // HTTP 状态码
+        ResponseCodeEnum::UNAUTHORIZED => '未授权',
+        ResponseCodeEnum::FORBIDDEN => '禁止访问',
+        ResponseCodeEnum::NOT_FOUND => '资源不存在',
+
         // API Key 相关
         ResponseCodeEnum::API_KEY_REQUIRED => 'API Key 不能为空',
         ResponseCodeEnum::API_KEY_INVALID => 'API Key 无效',
