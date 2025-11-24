@@ -20,7 +20,8 @@ class ResponseCodeEnum
     const AGENT_NOT_FOUND = 40401;
     const AGENT_ALREADY_EXISTS = 40001;
     const AGENT_OFFLINE = 40002;
-
+    const AGENT_REGISTER_SUCCESS_AGAIN = 40003;
+    const AGENT_REGISTER_SUCCESS = 40004;
     // 指标数据相关
     const METRIC_INVALID_FORMAT = 42201;
     const METRIC_SAVE_FAILED = 50001;

@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 /**
  * Property 模型
@@ -13,7 +12,7 @@ use Illuminate\Support\Str;
  */
 class Property extends Model
 {
-    // 使用字符串类型主键（UUID）
+    // 使用字符串类型主键
     protected $keyType = 'string';
     public $incrementing = false;
 
@@ -25,9 +24,8 @@ class Property extends Model
      */
     protected $fillable = [
         'id',
-        'key',
+        'name',
         'value',
-        'description',
         'created_at',
         'updated_at',
     ];
@@ -42,16 +40,13 @@ class Property extends Model
 
     /**
      * 模型启动方法
-     * 自动生成 UUID 和毫秒时间戳
+     * 自动设置毫秒时间戳
      */
     protected static function boot(): void
     {
         parent::boot();
 
         static::creating(function ($model) {
-            if (empty($model->id)) {
-                $model->id = (string) Str::uuid();
-            }
             $now = now()->timestamp * 1000;
             $model->created_at = $now;
             $model->updated_at = $now;
@@ -63,41 +58,39 @@ class Property extends Model
     }
 
     /**
-     * 根据 key 获取配置值
+     * 根据 id 获取配置值
      *
-     * @param string $key
+     * @param string $id
      * @param mixed $default
      * @return mixed
      */
-    public static function getValue(string $key, mixed $default = null): mixed
+    public static function getValue(string $id, mixed $default = null): mixed
     {
-        $property = self::where('key', $key)->first();
+        $property = self::find($id);
         return $property ? $property->value : $default;
     }
 
     /**
      * 设置配置值
      *
-     * @param string $key
+     * @param string $id
+     * @param string $name
      * @param mixed $value
-     * @param string|null $description
      * @return self
      */
-    public static function setValue(string $key, mixed $value, ?string $description = null): self
+    public static function setValue(string $id, string $name, mixed $value): self
     {
-        $property = self::where('key', $key)->first();
+        $property = self::find($id);
 
         if ($property) {
+            $property->name = $name;
             $property->value = $value;
-            if ($description !== null) {
-                $property->description = $description;
-            }
             $property->save();
         } else {
             $property = self::create([
-                'key' => $key,
+                'id' => $id,
+                'name' => $name,
                 'value' => $value,
-                'description' => $description,
             ]);
         }
 
@@ -107,22 +100,23 @@ class Property extends Model
     /**
      * 删除配置
      *
-     * @param string $key
+     * @param string $id
      * @return bool
      */
-    public static function deleteValue(string $key): bool
+    public static function deleteValue(string $id): bool
     {
-        return self::where('key', $key)->delete() > 0;
+        $property = self::find($id);
+        return $property ? $property->delete() : false;
     }
 
     /**
      * 检查配置是否存在
      *
-     * @param string $key
+     * @param string $id
      * @return bool
      */
-    public static function hasKey(string $key): bool
+    public static function hasKey(string $id): bool
     {
-        return self::where('key', $key)->exists();
+        return self::where('id', $id)->exists();
     }
 }

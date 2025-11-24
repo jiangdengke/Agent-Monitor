@@ -36,8 +36,6 @@ class AuthenticateApiKey
             return ApiResponse::fail('',ResponseCodeEnum::API_KEY_EXPIRED);
         }
 
-        // 更新最后使用时间
-        $key->updateLastUsed();
         // 将api key信息附加到请求，供后续控制器使用
         $request->merge(['api_key' => $key]);
         return $next($request);

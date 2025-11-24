@@ -29,13 +29,18 @@ class AlertConfig extends Model
         'id',
         'agent_id',
         'name',
-        'type',
-        'metric',
-        'operator',
-        'threshold',
-        'duration',
         'enabled',
-        'notify_channels',
+        'rule_cpu_enabled',
+        'rule_cpu_threshold',
+        'rule_cpu_duration',
+        'rule_memory_enabled',
+        'rule_memory_threshold',
+        'rule_memory_duration',
+        'rule_disk_enabled',
+        'rule_disk_threshold',
+        'rule_disk_duration',
+        'rule_network_enabled',
+        'rule_network_duration',
         'created_at',
         'updated_at',
     ];
@@ -44,10 +49,18 @@ class AlertConfig extends Model
      * 字段类型转换
      */
     protected $casts = [
-        'threshold' => 'float',
-        'duration' => 'integer',
         'enabled' => 'boolean',
-        'notify_channels' => 'array', // JSON 数组
+        'rule_cpu_enabled' => 'boolean',
+        'rule_cpu_threshold' => 'float',
+        'rule_cpu_duration' => 'integer',
+        'rule_memory_enabled' => 'boolean',
+        'rule_memory_threshold' => 'float',
+        'rule_memory_duration' => 'integer',
+        'rule_disk_enabled' => 'boolean',
+        'rule_disk_threshold' => 'float',
+        'rule_disk_duration' => 'integer',
+        'rule_network_enabled' => 'boolean',
+        'rule_network_duration' => 'integer',
         'created_at' => 'integer',
         'updated_at' => 'integer',
     ];
@@ -88,28 +101,5 @@ class AlertConfig extends Model
     public function alertRecords(): HasMany
     {
         return $this->hasMany(AlertRecord::class, 'config_id');
-    }
-
-    /**
-     * 检查值是否触发告警
-     *
-     * @param float $value
-     * @return bool
-     */
-    public function shouldAlert(float $value): bool
-    {
-        if (!$this->enabled) {
-            return false;
-        }
-
-        return match($this->operator) {
-            '>' => $value > $this->threshold,
-            '>=' => $value >= $this->threshold,
-            '<' => $value < $this->threshold,
-            '<=' => $value <= $this->threshold,
-            '==' => $value == $this->threshold,
-            '!=' => $value != $this->threshold,
-            default => false,
-        };
     }
 }

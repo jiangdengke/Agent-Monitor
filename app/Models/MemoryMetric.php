@@ -13,6 +13,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class MemoryMetric extends Model
 {
+    // 使用自增主键
+    protected $keyType = 'integer';
+    public $incrementing = true;
+
     // 禁用 Laravel 自动时间戳管理
     public $timestamps = false;
 
@@ -24,9 +28,7 @@ class MemoryMetric extends Model
         'total',
         'used',
         'free',
-        'available',
-        'buffers',
-        'cached',
+        'usage_percent',
         'swap_total',
         'swap_used',
         'swap_free',
@@ -41,19 +43,16 @@ class MemoryMetric extends Model
         'total' => 'integer',
         'used' => 'integer',
         'free' => 'integer',
-        'available' => 'integer',
-        'buffers' => 'integer',
-        'cached' => 'integer',
+        'usage_percent' => 'float',
         'swap_total' => 'integer',
         'swap_used' => 'integer',
         'swap_free' => 'integer',
         'timestamp' => 'integer',
-        'created_at' => 'integer',
     ];
 
     /**
      * 模型启动方法
-     * 自动设置毫秒时间戳
+     * 自动设置时间戳
      */
     protected static function boot(): void
     {
@@ -61,7 +60,7 @@ class MemoryMetric extends Model
 
         static::creating(function ($model) {
             if (empty($model->created_at)) {
-                $model->created_at = now()->timestamp * 1000;
+                $model->created_at = now();
             }
         });
     }

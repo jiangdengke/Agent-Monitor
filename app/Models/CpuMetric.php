@@ -13,6 +13,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class CpuMetric extends Model
 {
+    // 使用自增主键
+    protected $keyType = 'integer';
+    public $incrementing = true;
+
     // 禁用 Laravel 自动时间戳管理
     public $timestamps = false;
 
@@ -21,9 +25,10 @@ class CpuMetric extends Model
      */
     protected $fillable = [
         'agent_id',
-        'usage',
-        'cores',
-        'frequency',
+        'usage_percent',
+        'logical_cores',
+        'physical_cores',
+        'model_name',
         'timestamp',
         'created_at',
     ];
@@ -32,16 +37,15 @@ class CpuMetric extends Model
      * 字段类型转换
      */
     protected $casts = [
-        'usage' => 'float',
-        'cores' => 'integer',
-        'frequency' => 'float',
+        'usage_percent' => 'float',
+        'logical_cores' => 'integer',
+        'physical_cores' => 'integer',
         'timestamp' => 'integer',
-        'created_at' => 'integer',
     ];
 
     /**
      * 模型启动方法
-     * 自动设置毫秒时间戳
+     * 自动设置时间戳
      */
     protected static function boot(): void
     {
@@ -49,7 +53,7 @@ class CpuMetric extends Model
 
         static::creating(function ($model) {
             if (empty($model->created_at)) {
-                $model->created_at = now()->timestamp * 1000;
+                $model->created_at = now();
             }
         });
     }

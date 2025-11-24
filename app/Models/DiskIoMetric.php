@@ -13,6 +13,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class DiskIoMetric extends Model
 {
+    // 使用自增主键
+    protected $keyType = 'integer';
+    public $incrementing = true;
+
     // 禁用 Laravel 自动时间戳管理
     public $timestamps = false;
 
@@ -22,10 +26,16 @@ class DiskIoMetric extends Model
     protected $fillable = [
         'agent_id',
         'device',
-        'read_bytes',
-        'write_bytes',
         'read_count',
         'write_count',
+        'read_bytes',
+        'write_bytes',
+        'read_bytes_rate',
+        'write_bytes_rate',
+        'read_time',
+        'write_time',
+        'io_time',
+        'iops_in_progress',
         'timestamp',
         'created_at',
     ];
@@ -34,17 +44,22 @@ class DiskIoMetric extends Model
      * 字段类型转换
      */
     protected $casts = [
-        'read_bytes' => 'integer',
-        'write_bytes' => 'integer',
         'read_count' => 'integer',
         'write_count' => 'integer',
+        'read_bytes' => 'integer',
+        'write_bytes' => 'integer',
+        'read_bytes_rate' => 'integer',
+        'write_bytes_rate' => 'integer',
+        'read_time' => 'integer',
+        'write_time' => 'integer',
+        'io_time' => 'integer',
+        'iops_in_progress' => 'integer',
         'timestamp' => 'integer',
-        'created_at' => 'integer',
     ];
 
     /**
      * 模型启动方法
-     * 自动设置毫秒时间戳
+     * 自动设置时间戳
      */
     protected static function boot(): void
     {
@@ -52,7 +67,7 @@ class DiskIoMetric extends Model
 
         static::creating(function ($model) {
             if (empty($model->created_at)) {
-                $model->created_at = now()->timestamp * 1000;
+                $model->created_at = now();
             }
         });
     }

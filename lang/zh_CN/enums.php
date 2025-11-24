@@ -18,6 +18,8 @@ return [
         ResponseCodeEnum::API_KEY_EXPIRED => 'API Key 已过期',
 
         // Agent 相关
+        ResponseCodeEnum::AGENT_REGISTER_SUCCESS => '探针注册成功',
+        ResponseCodeEnum::AGENT_REGISTER_SUCCESS_AGAIN => '探针重新注册成功',
         ResponseCodeEnum::AGENT_NOT_FOUND => '探针不存在',
         ResponseCodeEnum::AGENT_ALREADY_EXISTS => '探针已存在',
         ResponseCodeEnum::AGENT_OFFLINE => '探针离线',

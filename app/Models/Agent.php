@@ -31,6 +31,9 @@ class Agent extends Model
         'os',
         'arch',
         'version',
+        'platform',
+        'location',
+        'expire_time',
         'status',
         'last_seen_at',
         'created_at',
@@ -42,6 +45,7 @@ class Agent extends Model
      */
     protected $casts = [
         'status' => 'integer',
+        'expire_time' => 'integer',
         'last_seen_at' => 'integer',
         'created_at' => 'integer',
         'updated_at' => 'integer',

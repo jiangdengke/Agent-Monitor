@@ -29,11 +29,13 @@ class MonitorTask extends Model
         'name',
         'type',
         'target',
+        'description',
+        'enabled',
+        'show_target_public',
         'interval',
-        'timeout',
         'agent_ids',
-        'expect_code',
-        'expect_content',
+        'http_config',
+        'tcp_config',
         'created_at',
         'updated_at',
     ];
@@ -42,10 +44,12 @@ class MonitorTask extends Model
      * 字段类型转换
      */
     protected $casts = [
+        'enabled' => 'boolean',
+        'show_target_public' => 'boolean',
         'interval' => 'integer',
-        'timeout' => 'integer',
-        'agent_ids' => 'array', // JSON 数组
-        'expect_code' => 'integer',
+        'agent_ids' => 'array',
+        'http_config' => 'array',
+        'tcp_config' => 'array',
         'created_at' => 'integer',
         'updated_at' => 'integer',
     ];

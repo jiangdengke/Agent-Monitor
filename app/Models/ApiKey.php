@@ -27,9 +27,8 @@ class ApiKey extends Model
         'id',
         'name',
         'key',
-        'description',
-        'expires_at',
-        'last_used_at',
+        'enabled',
+        'created_by',
         'created_at',
         'updated_at',
     ];
@@ -38,8 +37,7 @@ class ApiKey extends Model
      * 字段类型转换
      */
     protected $casts = [
-        'expires_at' => 'integer',
-        'last_used_at' => 'integer',
+        'enabled' => 'boolean',
         'created_at' => 'integer',
         'updated_at' => 'integer',
     ];
@@ -73,37 +71,24 @@ class ApiKey extends Model
      */
     public function isValid(): bool
     {
-        // 检查是否过期
-        if ($this->expires_at && $this->expires_at < now()->timestamp * 1000) {
-            return false;
-        }
-        return true;
+        // 检查是否启用
+        return $this->enabled === true;
     }
 
     /**
      * 生成新的 API Key
      *
      * @param string $name
-     * @param string|null $description
-     * @param int|null $expiresAt 过期时间（毫秒时间戳）
+     * @param string $createdBy 创建人 ID
      * @return self
      */
-    public static function generateKey(string $name, ?string $description = null, ?int $expiresAt = null): self
+    public static function generateKey(string $name, string $createdBy = 'system'): self
     {
         return self::create([
             'name' => $name,
             'key' => 'ak_' . Str::random(32),
-            'description' => $description,
-            'expires_at' => $expiresAt,
+            'enabled' => true,
+            'created_by' => $createdBy,
         ]);
-    }
-
-    /**
-     * 更新最后使用时间
-     */
-    public function updateLastUsed(): void
-    {
-        $this->last_used_at = now()->timestamp * 1000;
-        $this->save();
     }
 }
