@@ -6,8 +6,9 @@ use App\Enums\ResponseCodeEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Agent;
 use Illuminate\Http\Request;
-use Jiannei\Response\Laravel\Response;
 use Illuminate\Http\JsonResponse;
+use Jiannei\Response\Laravel\Support\Facades\Response;
+
 class AgentController extends Controller
 {
     /**
@@ -33,11 +34,12 @@ class AgentController extends Controller
                 'os' => $validated['os'] ?? $agent->os,
                 'arch' => $validated['arch'] ?? $agent->arch,
                 'version' => $validated['version'] ?? $agent->version,
-                'status' => 1, // 在线
-                ]);
+                'status' => 1,
+            ]);
             $agent->updateHeartbeat();
-            return Response::success($agent,'',ResponseCodeEnum::AGENt_REGISTER_SUCCESS_AGAIN);
+            return Response::success($agent, '', ResponseCodeEnum::AGENT_UPDATE_SUCCESS);
         }
+
         // 创建新探针
         $agent = Agent::create([
             'name' => $validated['hostname'],
@@ -46,19 +48,19 @@ class AgentController extends Controller
             'os' => $validated['os'] ?? '',
             'arch' => $validated['arch'] ?? '',
             'version' => $validated['version'] ?? '',
-            'status' => 1, // 在线
+            'status' => 1,
         ]);
-        return Response::success($agent,'',ResponseCodeEnum::AGENt_REGISTER_SUCCESS);
+        return Response::success($agent, '', ResponseCodeEnum::AGENT_REGISTER_SUCCESS);
     }
 
     /**
      * agent 心跳
      */
-    public function heartbeat(Request $request,string $id):JsonResponse
+    public function heartbeat(Request $request, string $id): JsonResponse
     {
         $agent = Agent::find($id);
-        if (!$agent){
-            return Response::fail('',ResponseCodeEnum::AGENT_NOT_FOUND);
+        if (!$agent) {
+            return Response::fail('', ResponseCodeEnum::AGENT_NOT_FOUND);
         }
         $agent->updateHeartbeat();
         $agent->status = 1;
@@ -66,26 +68,27 @@ class AgentController extends Controller
         return Response::success([
             'agent_id' => $agent->id,
             'last_seen_at' => $agent->last_seen_at,
-        ],ResponseCodeEnum::SUCCESS);
+        ], '', ResponseCodeEnum::AGENT_HEARTBEAT_SUCCESS);
     }
+
     /**
      * 获取探针列表
      */
     public function index(): JsonResponse
     {
         $agents = Agent::orderBy('last_seen_at', 'desc')->get();
-        return Response::success($agents,'',ResponseCodeEnum::SUCCESS);
+        return Response::success($agents, '', ResponseCodeEnum::SUCCESS);
     }
+
     /**
      * 获取每个探针信息
      */
     public function show(string $id): JsonResponse
     {
         $agent = Agent::find($id);
-        if (!$agent){
-            return Response::fail('',ResponseCodeEnum::AGENT_NOT_FOUND);
+        if (!$agent) {
+            return Response::fail('', ResponseCodeEnum::AGENT_NOT_FOUND);
         }
-        return Response::success($agent,'',ResponseCodeEnum::SUCCESS);
+        return Response::success($agent, '', ResponseCodeEnum::SUCCESS);
     }
 }
-

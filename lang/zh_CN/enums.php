@@ -1,39 +1,76 @@
 <?php
-use App\Enums\ResponseCodeEnum;
+
 return [
-    // HTTP 状态码描述（可选，包自带）
-    // 自定义业务码描述
-    ResponseCodeEnum::class => [
-        ResponseCodeEnum::SUCCESS => '操作成功',
-        ResponseCodeEnum::FAIL => '操作失败',
-        ResponseCodeEnum::SERVER_ERROR => '服务器错误',
-        // HTTP 状态码
-        ResponseCodeEnum::UNAUTHORIZED => '未授权',
-        ResponseCodeEnum::FORBIDDEN => '禁止访问',
-        ResponseCodeEnum::NOT_FOUND => '资源不存在',
+    // ==================== 通用业务码 ====================
+    // 成功
+    200000 => '操作成功',
 
-        // API Key 相关
-        ResponseCodeEnum::API_KEY_REQUIRED => 'API Key 不能为空',
-        ResponseCodeEnum::API_KEY_INVALID => 'API Key 无效',
-        ResponseCodeEnum::API_KEY_EXPIRED => 'API Key 已过期',
+    // 客户端错误
+    400001 => '参数错误',
+    400002 => '数据验证失败',
+    401000 => '未授权',
+    403000 => '禁止访问',
+    404000 => '资源不存在',
 
-        // Agent 相关
-        ResponseCodeEnum::AGENT_REGISTER_SUCCESS => '探针注册成功',
-        ResponseCodeEnum::AGENT_REGISTER_SUCCESS_AGAIN => '探针重新注册成功',
-        ResponseCodeEnum::AGENT_NOT_FOUND => '探针不存在',
-        ResponseCodeEnum::AGENT_ALREADY_EXISTS => '探针已存在',
-        ResponseCodeEnum::AGENT_OFFLINE => '探针离线',
+    // 服务端错误
+    500001 => '服务器内部错误',
+    500002 => '服务暂不可用',
+    500003 => '数据库错误',
 
-        // 指标数据相关
-        ResponseCodeEnum::METRIC_INVALID_FORMAT => '指标数据格式错误',
-        ResponseCodeEnum::METRIC_SAVE_FAILED => '指标数据保存失败',
+    // ==================== API Key 认证模块 ====================
+    400101 => 'API Key 不能为空',
+    400102 => 'API Key 无效',
+    400103 => 'API Key 已过期',
 
-        // 监控任务相关
-        ResponseCodeEnum::MONITOR_TASK_NOT_FOUND => '监控任务不存在',
-        ResponseCodeEnum::MONITOR_TASK_INVALID => '监控任务配置无效',
+    // ==================== Agent 探针模块 ====================
+    // 成功
+    200201 => '探针注册成功',
+    200202 => '探针信息更新成功',
+    200203 => '心跳更新成功',
 
-        // 告警相关
-        ResponseCodeEnum::ALERT_CONFIG_NOT_FOUND => '告警配置不存在',
-        ResponseCodeEnum::ALERT_CONFIG_INVALID => '告警配置无效',
-    ],
+    // 客户端错误
+    400201 => '探针不存在',
+    400202 => '探针已存在',
+    400203 => '探针离线',
+    400204 => '探针数据格式错误',
+
+    // ==================== Metric 指标数据模块 ====================
+    // 成功
+    200301 => '指标数据保存成功',
+    200302 => '批量指标数据保存成功',
+
+    // 客户端错误
+    400301 => '指标数据格式错误',
+    400302 => '缺少必填字段',
+    400303 => '时间戳格式错误',
+
+    // 服务端错误
+    500301 => '指标数据保存失败',
+    500302 => '指标数据库操作失败',
+
+    // ==================== Monitor 监控任务模块 ====================
+    // 成功
+    200401 => '监控任务创建成功',
+    200402 => '监控任务更新成功',
+    200403 => '监控任务删除成功',
+
+    // 客户端错误
+    400401 => '监控任务不存在',
+    400402 => '监控任务配置无效',
+    400403 => '监控任务已存在',
+
+    // ==================== Alert 告警模块 ====================
+    // 成功
+    200501 => '告警配置创建成功',
+    200502 => '告警配置更新成功',
+    200503 => '告警发送成功',
+
+    // 客户端错误
+    400501 => '告警配置不存在',
+    400502 => '告警配置无效',
+    400503 => '告警渠道配置错误',
+
+    // 服务端错误
+    500501 => '告警发送失败',
+    500502 => '告警渠道异常',
 ];

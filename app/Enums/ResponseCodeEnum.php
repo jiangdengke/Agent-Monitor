@@ -1,36 +1,83 @@
 <?php
 namespace App\Enums;
 
-class ResponseCodeEnum
+use Jiannei\Enum\Laravel\Support\Traits\EnumEnhance;
+
+enum ResponseCodeEnum: int
 {
-    // 通用业务码
-    const SUCCESS = 200;
-    const FAIL = 400;
-    const UNAUTHORIZED = 401;
-    const FORBIDDEN = 403;
-    const NOT_FOUND = 404;
-    const SERVER_ERROR = 500;
+    use EnumEnhance;
 
-    // API Key 相关
-    const API_KEY_REQUIRED = 40101;
-    const API_KEY_INVALID = 40102;
-    const API_KEY_EXPIRED = 40103;
+    // ==================== 通用业务码 ====================
+    // 成功
+    case SUCCESS = 200000;
 
-    // Agent 相关
-    const AGENT_NOT_FOUND = 40401;
-    const AGENT_ALREADY_EXISTS = 40001;
-    const AGENT_OFFLINE = 40002;
-    const AGENT_REGISTER_SUCCESS_AGAIN = 40003;
-    const AGENT_REGISTER_SUCCESS = 40004;
-    // 指标数据相关
-    const METRIC_INVALID_FORMAT = 42201;
-    const METRIC_SAVE_FAILED = 50001;
+    // 客户端错误
+    case CLIENT_PARAMETER_ERROR = 400001;
+    case CLIENT_VALIDATION_ERROR = 400002;
+    case UNAUTHORIZED = 401000;
+    case FORBIDDEN = 403000;
+    case NOT_FOUND = 404000;
 
-    // 监控任务相关
-    const MONITOR_TASK_NOT_FOUND = 40402;
-    const MONITOR_TASK_INVALID = 42202;
+    // 服务端错误
+    case SERVER_ERROR = 500001;
+    case SERVICE_UNAVAILABLE = 500002;
+    case DATABASE_ERROR = 500003;
 
-    // 告警相关
-    const ALERT_CONFIG_NOT_FOUND = 40403;
-    const ALERT_CONFIG_INVALID = 42203;
+    // ==================== API Key 认证模块（1xx）====================
+    // 客户端错误
+    case API_KEY_REQUIRED = 400101;
+    case API_KEY_INVALID = 400102;
+    case API_KEY_EXPIRED = 400103;
+
+    // ==================== Agent 探针模块（2xx）====================
+    // 成功
+    case AGENT_REGISTER_SUCCESS = 200201;
+    case AGENT_UPDATE_SUCCESS = 200202;
+    case AGENT_HEARTBEAT_SUCCESS = 200203;
+
+    // 客户端错误
+    case AGENT_NOT_FOUND = 400201;
+    case AGENT_ALREADY_EXISTS = 400202;
+    case AGENT_OFFLINE = 400203;
+    case AGENT_INVALID_DATA = 400204;
+
+    // ==================== Metric 指标数据模块（3xx）====================
+    // 成功
+    case METRIC_SAVE_SUCCESS = 200301;
+    case METRIC_BATCH_SAVE_SUCCESS = 200302;
+
+    // 客户端错误
+    case METRIC_INVALID_FORMAT = 400301;
+    case METRIC_MISSING_REQUIRED_FIELD = 400302;
+    case METRIC_INVALID_TIMESTAMP = 400303;
+
+    // 服务端错误
+    case METRIC_SAVE_FAILED = 500301;
+    case METRIC_DATABASE_ERROR = 500302;
+
+    // ==================== Monitor 监控任务模块（4xx）====================
+    // 成功
+    case MONITOR_TASK_CREATE_SUCCESS = 200401;
+    case MONITOR_TASK_UPDATE_SUCCESS = 200402;
+    case MONITOR_TASK_DELETE_SUCCESS = 200403;
+
+    // 客户端错误
+    case MONITOR_TASK_NOT_FOUND = 400401;
+    case MONITOR_TASK_INVALID = 400402;
+    case MONITOR_TASK_ALREADY_EXISTS = 400403;
+
+    // ==================== Alert 告警模块（5xx）====================
+    // 成功
+    case ALERT_CONFIG_CREATE_SUCCESS = 200501;
+    case ALERT_CONFIG_UPDATE_SUCCESS = 200502;
+    case ALERT_SEND_SUCCESS = 200503;
+
+    // 客户端错误
+    case ALERT_CONFIG_NOT_FOUND = 400501;
+    case ALERT_CONFIG_INVALID = 400502;
+    case ALERT_CHANNEL_INVALID = 400503;
+
+    // 服务端错误
+    case ALERT_SEND_FAILED = 500501;
+    case ALERT_CHANNEL_ERROR = 500502;
 }
