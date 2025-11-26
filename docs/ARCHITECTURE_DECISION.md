@@ -6,7 +6,7 @@
 
 ### 背景
 
-原计划使用 WebSocket 长连接以兼容 Pika 原项目架构，但考虑到 WebSocket 在部署、负载均衡和维护上的复杂性，以及 Laravel 本身对 HTTP API 的优秀支持，决定**改为使用 HTTP POST 接口**进行数据上报。
+原计划使用 WebSocket 长连接架构，但考虑到 WebSocket 在部署、负载均衡和维护上的复杂性，以及 Laravel 本身对 HTTP API 的优秀支持，决定**改为使用 HTTP POST 接口**进行数据上报。
 
 ### 变更原因
 

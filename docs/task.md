@@ -9,7 +9,7 @@
 - **Server 端**：Laravel 11 (Standard)
 - **Agent 端**：Go 编写的轻量级探针（HTTP 客户端）
 - **通信方式**：探针通过 HTTP POST 请求发送指标数据
-- **协议格式**：JSON 消息（兼容原 Pika 项目数据结构）
+- **协议格式**：JSON 消息
 
 ```
 Agent (Go) --HTTP POST--> Laravel --> PostgreSQL
