@@ -8,8 +8,8 @@ use Illuminate\Support\Str;
 /**
  * ApiKey 模型
  *
- * 管理系统的 API 访问密钥
- * Agent 通过 API Key 进行身份认证和数据上报
+ * API 密钥管理
+ * 用于 Agent 与 Server 之间的认证
  */
 class ApiKey extends Model
 {

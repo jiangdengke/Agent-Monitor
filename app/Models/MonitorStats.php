@@ -9,11 +9,10 @@ use Illuminate\Support\Str;
 /**
  * MonitorStats 模型
  *
- * 监控任务统计数据
- * 聚合每个探针执行监控任务的成功/失败统计
+ * 监控任务统计
+ * 存储每个监控任务的聚合统计数据（在线率、平均响应时间等）
  */
-class MonitorStats extends Model
-{
+class MonitorStats extends Model{
     // 使用字符串类型主键（UUID）
     protected $keyType = 'string';
     public $incrementing = false;

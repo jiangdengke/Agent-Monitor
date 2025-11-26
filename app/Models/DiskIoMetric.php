@@ -11,8 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * 磁盘 I/O 性能指标
  * 存储磁盘读写速率和 IOPS 信息
  */
-class DiskIoMetric extends Model
-{
+class DiskIoMetric extends Model{
     // 使用自增主键
     protected $keyType = 'integer';
     public $incrementing = true;

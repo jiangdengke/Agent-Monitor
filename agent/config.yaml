@@ -1,0 +1,12 @@
+server:
+  url: "http://localhost:8000/api"
+  api_key: "ak_u2e2aey0qqh0ggUsy0P4F4bN0olIPX0p"
+
+agent:
+  name: "my-server"
+  hostname: "" # Leave empty to auto-detect
+  ip: ""       # Leave empty to auto-detect
+
+collector:
+  interval: 60 # Metrics collection interval in seconds
+  heartbeat_interval: 30 # Heartbeat interval in seconds

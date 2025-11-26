@@ -11,8 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * GPU 性能指标
  * 存储 GPU 使用率和状态信息
  */
-class GpuMetric extends Model
-{
+class GpuMetric extends Model{
     // 使用自增主键
     protected $keyType = 'integer';
     public $incrementing = true;

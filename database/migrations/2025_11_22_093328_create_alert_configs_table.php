@@ -33,7 +33,7 @@ return new class extends Migration
 
             // === 内存告警规则 ===
             $table->boolean('rule_memory_enabled')->default(false); // 是否启用内存告警
-            $table->floaqt('rule_memory_threshold')->nullable(); // 内存使用率阈值（百分比，0-100）
+            $table->float('rule_memory_threshold')->nullable(); // 内存使用率阈值（百分比，0-100）
             $table->integer('rule_memory_duration')->nullable(); // 持续时间阈值（秒）
 
             // === 磁盘告警规则 ===

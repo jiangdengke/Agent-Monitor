@@ -11,8 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * 磁盘空间使用指标
  * 存储磁盘分区的容量和使用情况
  */
-class DiskMetric extends Model
-{
+class DiskMetric extends Model{
     // 使用自增主键
     protected $keyType = 'integer';
     public $incrementing = true;

@@ -11,8 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * 内存性能指标数据
  * 存储物理内存和 Swap 的使用情况
  */
-class MemoryMetric extends Model
-{
+class MemoryMetric extends Model{
     // 使用自增主键
     protected $keyType = 'integer';
     public $incrementing = true;

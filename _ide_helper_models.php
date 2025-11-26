@@ -85,8 +85,8 @@ namespace App\Models{
 /**
  * AlertConfig 模型
  * 
- * 告警规则配置
- * 定义触发告警的条件和通知方式
+ * 告警配置
+ * 定义 CPU、内存、磁盘等资源的告警阈值和规则
  *
  * @property string $id
  * @property string|null $agent_id
@@ -180,8 +180,8 @@ namespace App\Models{
 /**
  * ApiKey 模型
  * 
- * 管理系统的 API 访问密钥
- * Agent 通过 API Key 进行身份认证和数据上报
+ * API 密钥管理
+ * 用于 Agent 与 Server 之间的认证
  *
  * @property string $id
  * @property string $name
@@ -208,8 +208,8 @@ namespace App\Models{
 /**
  * AuditResult 模型
  * 
- * 系统审计结果
- * 存储安全扫描或配置检查的结果
+ * 安全审计结果
+ * 存储 VPS 安全审计的详细报告
  *
  * @property int $id
  * @property string $agent_id
@@ -247,7 +247,7 @@ namespace App\Models{
  * @property int|null $physical_cores
  * @property string|null $model_name
  * @property int $timestamp
- * @property int|null $created_at
+ * @property string|null $created_at
  * @property-read \App\Models\Agent $agent
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CpuMetric newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CpuMetric newQuery()
@@ -285,7 +285,7 @@ namespace App\Models{
  * @property int|null $io_time
  * @property int|null $iops_in_progress
  * @property int $timestamp
- * @property int|null $created_at
+ * @property string|null $created_at
  * @property-read \App\Models\Agent $agent
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DiskIoMetric newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DiskIoMetric newQuery()
@@ -324,7 +324,7 @@ namespace App\Models{
  * @property int $free
  * @property float $usage_percent
  * @property int $timestamp
- * @property int|null $created_at
+ * @property string|null $created_at
  * @property-read \App\Models\Agent $agent
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DiskMetric newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DiskMetric newQuery()
@@ -362,7 +362,7 @@ namespace App\Models{
  * @property float|null $fan_speed
  * @property string|null $performance_state
  * @property int $timestamp
- * @property int|null $created_at
+ * @property string|null $created_at
  * @property-read \App\Models\Agent $agent
  * @method static \Illuminate\Database\Eloquent\Builder<static>|GpuMetric newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|GpuMetric newQuery()
@@ -403,7 +403,7 @@ namespace App\Models{
  * @property int|null $boot_time
  * @property int|null $procs
  * @property int $timestamp
- * @property int|null $created_at
+ * @property string|null $created_at
  * @property-read \App\Models\Agent $agent
  * @method static \Illuminate\Database\Eloquent\Builder<static>|HostMetric newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|HostMetric newQuery()
@@ -437,7 +437,7 @@ namespace App\Models{
  * @property float $load5
  * @property float $load15
  * @property int $timestamp
- * @property int|null $created_at
+ * @property string|null $created_at
  * @property-read \App\Models\Agent $agent
  * @method static \Illuminate\Database\Eloquent\Builder<static>|LoadMetric newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|LoadMetric newQuery()
@@ -470,7 +470,7 @@ namespace App\Models{
  * @property int|null $swap_used
  * @property int|null $swap_free
  * @property int $timestamp
- * @property int|null $created_at
+ * @property string|null $created_at
  * @property-read \App\Models\Agent $agent
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MemoryMetric newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MemoryMetric newQuery()
@@ -511,7 +511,7 @@ namespace App\Models{
  * @property int|null $cert_expiry_time
  * @property int|null $cert_days_left
  * @property int $timestamp
- * @property int|null $created_at
+ * @property string|null $created_at
  * @property-read \App\Models\Agent $agent
  * @property-read \App\Models\MonitorTask|null $monitorTask
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MonitorMetric newModelQuery()
@@ -540,10 +540,10 @@ namespace App\Models{
 /**
  * MonitorStats 模型
  * 
- * 监控任务统计数据
- * 聚合每个探针执行监控任务的成功/失败统计
+ * 监控任务统计
+ * 存储每个监控任务的聚合统计数据（在线率、平均响应时间等）
  *
- * @property int $id
+ * @property string $id
  * @property string $agent_id
  * @property string $monitor_id
  * @property string $monitor_type
@@ -593,7 +593,7 @@ namespace App\Models{
  * MonitorTask 模型
  * 
  * 监控任务配置
- * 定义服务监控任务的目标、频率和验证规则
+ * 定义需要监控的目标（URL/IP）和规则
  *
  * @property string $id
  * @property string $name
@@ -604,8 +604,8 @@ namespace App\Models{
  * @property bool $show_target_public
  * @property int $interval
  * @property array<array-key, mixed>|null $agent_ids
- * @property string|null $http_config
- * @property string|null $tcp_config
+ * @property array<array-key, mixed>|null $http_config
+ * @property array<array-key, mixed>|null $tcp_config
  * @property int $created_at
  * @property int $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\MonitorMetric> $monitorMetrics
@@ -647,7 +647,7 @@ namespace App\Models{
  * @property int|null $bytes_sent_total
  * @property int|null $bytes_recv_total
  * @property int $timestamp
- * @property int|null $created_at
+ * @property string|null $created_at
  * @property-read \App\Models\Agent $agent
  * @method static \Illuminate\Database\Eloquent\Builder<static>|NetworkMetric newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|NetworkMetric newQuery()
@@ -669,8 +669,8 @@ namespace App\Models{
 /**
  * Property 模型
  * 
- * 系统配置表
- * 存储键值对格式的系统配置信息
+ * 通用属性配置
+ * 存储键值对类型的配置信息
  *
  * @property string $id
  * @property string $name
@@ -702,7 +702,7 @@ namespace App\Models{
  * @property string|null $sensor_label
  * @property float $temperature
  * @property int $timestamp
- * @property int|null $created_at
+ * @property string|null $created_at
  * @property-read \App\Models\Agent $agent
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TemperatureMetric newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TemperatureMetric newQuery()

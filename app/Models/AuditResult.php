@@ -8,8 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * AuditResult 模型
  *
- * 系统审计结果
- * 存储安全扫描或配置检查的结果
+ * 安全审计结果
+ * 存储 VPS 安全审计的详细报告
  */
 class AuditResult extends Model
 {

@@ -11,8 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * 网络流量指标
  * 存储网卡的收发数据量和数据包统计
  */
-class NetworkMetric extends Model
-{
+class NetworkMetric extends Model{
     // 使用自增主键
     protected $keyType = 'integer';
     public $incrementing = true;

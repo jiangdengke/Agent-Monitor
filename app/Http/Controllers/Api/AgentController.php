@@ -72,12 +72,110 @@ class AgentController extends Controller
     }
 
     /**
-     * 获取探针列表
+     * 获取探针列表 (分页 & 搜索)
+     *
+     * 支持以下参数：
+     * - hostname: 按主机名模糊搜索
+     * - ip: 按IP模糊搜索
+     * - status: 按状态筛选 (0=离线, 1=在线)
+     * - sortField: 排序字段 (默认 last_seen_at)
+     * - sortOrder: 排序方向 (asc/desc, 默认 desc)
+     * - pageSize: 每页数量 (默认 10)
+     *
+     * @param Request $request
+     * @return JsonResponse
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $agents = Agent::orderBy('last_seen_at', 'desc')->get();
-        return Response::success($agents, '', ResponseCodeEnum::SUCCESS);
+        $query = Agent::query();
+
+        // 搜索条件
+        if ($request->has('hostname')) {
+            $query->where('hostname', 'like', '%' . $request->input('hostname') . '%');
+        }
+        if ($request->has('ip')) {
+            $query->where('ip', 'like', '%' . $request->input('ip') . '%');
+        }
+        if ($request->has('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        // 排序
+        $sortField = $request->input('sortField', 'last_seen_at');
+        $sortOrder = $request->input('sortOrder', 'desc');
+        // 防止 SQL 注入，限制排序字段
+        if (in_array($sortField, ['name', 'hostname', 'ip', 'status', 'last_seen_at', 'created_at'])) {
+            $query->orderBy($sortField, $sortOrder === 'asc' ? 'asc' : 'desc');
+        } else {
+            $query->orderBy('last_seen_at', 'desc');
+        }
+
+        // 分页
+        $pageSize = $request->input('pageSize', 10);
+        $agents = $query->paginate($pageSize);
+
+        return Response::success([
+            'items' => $agents->items(),
+            'total' => $agents->total(),
+        ], '', ResponseCodeEnum::SUCCESS);
+    }
+
+    /**
+     * 更新探针信息
+     *
+     * 允许管理员修改探针的元数据
+     *
+     * @param Request $request
+     * @param string $id 探针ID
+     * @return JsonResponse
+     */
+    public function update(Request $request, string $id): JsonResponse
+    {
+        $agent = Agent::find($id);
+        if (!$agent) {
+            return Response::fail('', ResponseCodeEnum::AGENT_NOT_FOUND);
+        }
+
+        $validated = $request->validate([
+            'name' => 'nullable|string|max:255',
+            'platform' => 'nullable|string|max:100',
+            'location' => 'nullable|string|max:100',
+            'expireTime' => 'nullable|integer',
+        ]);
+
+        // 映射 expireTime 到数据库字段 expire_time
+        $data = [];
+        if (isset($validated['name'])) $data['name'] = $validated['name'];
+        if (isset($validated['platform'])) $data['platform'] = $validated['platform'];
+        if (isset($validated['location'])) $data['location'] = $validated['location'];
+        if (isset($validated['expireTime'])) $data['expire_time'] = $validated['expireTime'];
+
+        $agent->update($data);
+
+        return Response::success($agent, '', ResponseCodeEnum::SUCCESS);
+    }
+
+    /**
+     * 获取探针统计数据
+     *
+     * 返回总数、在线数、离线数和在线率
+     *
+     * @return JsonResponse
+     */
+    public function statistics(): JsonResponse
+    {
+        $total = Agent::count();
+        $online = Agent::where('status', 1)->count();
+        $offline = Agent::where('status', 0)->count();
+        
+        $onlineRate = $total > 0 ? round(($online / $total) * 100, 2) : 0;
+
+        return Response::success([
+            'total' => $total,
+            'online' => $online,
+            'offline' => $offline,
+            'onlineRate' => $onlineRate,
+        ], '', ResponseCodeEnum::SUCCESS);
     }
 
     /**

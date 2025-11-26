@@ -69,15 +69,15 @@ sudo -u postgres createdb agent_monitor
 # 5. 运行迁移
 php artisan migrate
 
-# 6. 安装 WebSocket
-composer require laravel/reverb
-php artisan reverb:install
+# 6. 安装 Swoole + Octane (WebSocket 服务)
+pecl install swoole
+composer require laravel/octane
+php artisan octane:install --server=swoole
 
-# 7. 启动服务（4 个终端）
-php artisan serve              # 终端 1
-php artisan reverb:start       # 终端 2
-php artisan queue:work         # 终端 3
-npm run dev                    # 终端 4
+# 7. 启动服务（3 个终端）
+php artisan octane:start       # 终端 1 - WebSocket 服务
+php artisan queue:work         # 终端 2 - 队列处理
+npm run dev                    # 终端 3 - 前端开发（可选）
 ```
 
 ### 创建 API Key
@@ -87,55 +87,84 @@ php artisan tinker
 ```
 
 ```php
-$org = \App\Models\Organization::create([
-    'name' => 'My Company',
-    'slug' => 'my-company'
-]);
-
 $key = \App\Models\ApiKey::create([
-    'organization_id' => $org->id,
-    'name' => 'Production Key',
+    'name' => 'Default Key',
     'key' => \Illuminate\Support\Str::random(32),
     'enabled' => true
 ]);
 
-echo $key->key; // 复制这个 key 给 Agent 使用
+echo "API Key: " . $key->key . "\n";
+// 复制这个 key，配置到 Go Agent 的 config.yaml 中
 ```
 
-### 测试 Agent 注册
+### 配置 Go Agent
+
+创建 `agent/config.yaml`：
+
+```yaml
+server:
+  endpoint: "ws://localhost:8000/ws/agent"
+  api_key: "YOUR_API_KEY_HERE"
+
+agent:
+  name: "My Server"
+
+collector:
+  interval: 5          # 采集间隔（秒）
+  heartbeat_interval: 30  # 心跳间隔（秒）
+```
+
+### 启动 Agent
 
 ```bash
-curl -X POST http://localhost:8000/api/agent/register \
-  -H "X-API-Key: YOUR_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "agentInfo": {
-      "id": "server-001",
-      "name": "Web Server",
-      "hostname": "web-01",
-      "os": "linux",
-      "arch": "amd64",
-      "version": "1.0.0"
-    }
-  }'
+cd agent
+go run main.go
 ```
+
+Agent 会自动：
+1. 连接到 Laravel WebSocket 服务
+2. 注册探针信息
+3. 定期发送心跳和指标数据
 
 ---
 
 ## 🏗️ 系统架构
 
 ```
-┌──────────────┐      WebSocket/HTTP      ┌─────────────────┐
-│  Go Agent    │ ──────────────────────> │ Laravel Backend │
-│ (监控探针)    │ <────────────────────── │                 │
+┌──────────────┐                          ┌─────────────────┐
+│  Go Agent    │      WebSocket 长连接     │ Laravel Backend │
+│ (监控探针)    │ ──────────────────────> │ (Swoole/Octane) │
+│              │                          │                 │
+│ ┌──────────┐ │  1. 注册并建立连接        │ ┌─────────────┐ │
+│ │指标采集器 │ │  2. 定期发送心跳          │ │ WebSocket   │ │
+│ │- CPU     │ │  3. 上报指标数据          │ │ Handler     │ │
+│ │- Memory  │ │  4. 接收监控任务          │ └─────────────┘ │
+│ │- Disk    │ │                          │                 │
+│ │- Network │ │                          ├─> PostgreSQL    │
+│ │- GPU     │ │                          ├─> Redis         │
+│ └──────────┘ │                          ├─> Reverb (前端)  │
+│              │                          └─> HTTP API      │
 └──────────────┘                          └─────────────────┘
-     │                                             │
-     │ 采集系统指标                                 ├─> PostgreSQL
-     │ - CPU/内存/磁盘                             ├─> Redis
-     │ - 网络/GPU/温度                             ├─> WebSocket (Reverb)
-     │ - 监控任务结果                               └─> 前端界面
      │
-     └─> 部署在各个服务器上
+     └─> 部署在每台需要监控的服务器上
+```
+
+### 通信协议
+
+探针通过 WebSocket 发送 JSON 消息：
+
+```json
+{
+  "type": "metrics",
+  "data": {
+    "type": "cpu",
+    "data": {
+      "usagePercent": 45.2,
+      "logicalCores": 8,
+      ...
+    }
+  }
+}
 ```
 
 ---
@@ -177,9 +206,10 @@ curl -X POST http://localhost:8000/api/agent/register \
 
 **后端**
 - Laravel 11 (PHP 8.2+)
+- Swoole + Laravel Octane (高性能 WebSocket 服务)
 - PostgreSQL 14+ (推荐使用 TimescaleDB 扩展)
 - Redis 6+ (队列和缓存)
-- Laravel Reverb (WebSocket)
+- Laravel Reverb (可选，用于前端实时推送)
 
 **前端**
 - Vue 3
@@ -187,8 +217,10 @@ curl -X POST http://localhost:8000/api/agent/register \
 - Tailwind CSS
 
 **Agent**
-- Go (监控探针)
-- 跨平台支持
+- Go 1.21+
+- gorilla/websocket (WebSocket 客户端)
+- gopsutil (系统指标采集)
+- 跨平台支持 (Linux/Windows/macOS)
 
 ---
 

@@ -7,11 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * Property 模型
  *
- * 系统配置表
- * 存储键值对格式的系统配置信息
+ * 通用属性配置
+ * 存储键值对类型的配置信息
  */
-class Property extends Model
-{
+class Property extends Model{
     // 使用字符串类型主键
     protected $keyType = 'string';
     public $incrementing = false;

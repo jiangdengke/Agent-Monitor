@@ -11,8 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * 系统负载指标
  * 存储系统平均负载数据（1、5、15 分钟）
  */
-class LoadMetric extends Model
-{
+class LoadMetric extends Model{
     // 使用自增主键
     protected $keyType = 'integer';
     public $incrementing = true;

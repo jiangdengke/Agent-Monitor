@@ -11,8 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * 主机系统信息
  * 存储操作系统和运行时信息
  */
-class HostMetric extends Model
-{
+class HostMetric extends Model{
     // 使用自增主键
     protected $keyType = 'integer';
     public $incrementing = true;

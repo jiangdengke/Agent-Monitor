@@ -11,8 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * 服务监控检测结果
  * 存储 HTTP/TCP 等服务监控的详细检测结果
  */
-class MonitorMetric extends Model
-{
+class MonitorMetric extends Model{
     // 使用自增主键
     protected $keyType = 'integer';
     public $incrementing = true;

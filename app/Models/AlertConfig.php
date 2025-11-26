@@ -10,8 +10,8 @@ use Illuminate\Support\Str;
 /**
  * AlertConfig 模型
  *
- * 告警规则配置
- * 定义触发告警的条件和通知方式
+ * 告警配置
+ * 定义 CPU、内存、磁盘等资源的告警阈值和规则
  */
 class AlertConfig extends Model
 {

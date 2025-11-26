@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
  * MonitorTask 模型
  *
  * 监控任务配置
- * 定义服务监控任务的目标、频率和验证规则
+ * 定义需要监控的目标（URL/IP）和规则
  */
 class MonitorTask extends Model
 {

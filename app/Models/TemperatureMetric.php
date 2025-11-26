@@ -11,8 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * 温度传感器指标
  * 存储各类硬件温度数据
  */
-class TemperatureMetric extends Model
-{
+class TemperatureMetric extends Model{
     // 使用自增主键
     protected $keyType = 'integer';
     public $incrementing = true;

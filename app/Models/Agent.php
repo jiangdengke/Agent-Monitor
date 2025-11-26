@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * 探针（监控客户端）信息管理
  * 存储探针的基本信息和运行状态
  */
+
 class Agent extends Model
 {
     // 使用字符串类型主键（UUID）
