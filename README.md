@@ -6,9 +6,9 @@
 
 <p align="center">
 <a href="#快速开始">快速开始</a> •
-<a href="./GETTING_STARTED.md">详细教程</a> •
-<a href="./db_schema.md">数据库设计</a> •
-<a href="./AGENTS.md">开发指南</a>
+<a href="./docs/GETTING_STARTED.md">详细教程</a> •
+<a href="./docs/db_schema.md">数据库设计</a> •
+<a href="./docs/task.md">任务清单</a>
 </p>
 
 ---
@@ -29,10 +29,11 @@
 
 | 文档 | 说明 |
 |------|------|
-| [GETTING_STARTED.md](./GETTING_STARTED.md) | 📘 **一步步实施指南**（推荐从这里开始）|
-| [db_schema.md](./db_schema.md) | 数据库表结构设计 |
-| [task.md](./task.md) | 开发任务清单 |
-| [AGENTS.md](./AGENTS.md) | 开发规范和 Git 提交指南 |
+| [docs/GETTING_STARTED.md](./docs/GETTING_STARTED.md) | 📘 **一步步实施指南**（推荐从这里开始）|
+| [docs/db_schema.md](./docs/db_schema.md) | 数据库表结构设计 |
+| [docs/task.md](./docs/task.md) | 开发任务清单 |
+| [docs/ARCHITECTURE_DECISION.md](./docs/ARCHITECTURE_DECISION.md) | 架构决策记录 |
+| [docs/AGENTS.md](./docs/AGENTS.md) | 开发规范和 Git 提交指南 |
 
 ---
 
@@ -225,7 +226,7 @@ Agent 会自动：
 
 ## 🛠️ 开发指南
 
-详细的开发步骤请查看 **[GETTING_STARTED.md](./GETTING_STARTED.md)**
+详细的开发步骤请查看 **[docs/GETTING_STARTED.md](./docs/GETTING_STARTED.md)**
 
 ### 快速参考
 
@@ -274,7 +275,7 @@ php artisan config:clear
 4. 推送到分支 (`git push origin feature/AmazingFeature`)
 5. 打开 Pull Request
 
-详细的提交规范请参考 [AGENTS.md](./AGENTS.md)
+详细的提交规范请参考 [docs/AGENTS.md](./docs/AGENTS.md)
 
 ---
 
@@ -286,10 +287,10 @@ MIT License
 
 ## 🆘 需要帮助？
 
-- 📖 查看 [详细教程](./GETTING_STARTED.md)
+- 📖 查看 [详细教程](./docs/GETTING_STARTED.md)
 - 🐛 提交 [Issue](https://github.com/your-repo/issues)
 - 💬 加入讨论组
 
 ---
 
-**快速开始：** 直接查看 [GETTING_STARTED.md](./GETTING_STARTED.md) 获取完整的分步指南！🚀
+**快速开始：** 直接查看 [docs/GETTING_STARTED.md](./docs/GETTING_STARTED.md) 获取完整的分步指南！🚀

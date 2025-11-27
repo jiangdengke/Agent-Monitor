@@ -12,6 +12,7 @@ use App\Models\LoadMetric;
 use App\Models\MemoryMetric;
 use App\Models\DiskMetric;
 use App\Models\MonitorMetric;
+use App\Jobs\CheckAlerts;
 use App\Models\NetworkMetric;
 use App\Models\TemperatureMetric;
 use Illuminate\Http\JsonResponse;
@@ -90,9 +91,8 @@ class MetricController extends Controller
         $agentId = $validated['agent_id'];
         $metrics = $validated['metrics'];
         $count = 0;
+        $latestMetrics = []; // 用于告警检查的快照
         
-        Log::info("收到 " . count($metrics) . " 条指标数据，来自 Agent: {$agentId}");
-
         foreach ($metrics as $metricData) {
             if (!isset($metricData['type']) || !isset($metricData['data'])) {
                 continue;
@@ -101,16 +101,17 @@ class MetricController extends Controller
             $type = $metricData['type'];
             $data = $metricData['data'];
             $data['agent_id'] = $agentId;
-            // 如果 data 中没有 timestamp，则使用当前时间（外层可能有，或者默认当前）
             if (!isset($data['timestamp'])) {
                  $data['timestamp'] = $metricData['timestamp'] ?? (now()->timestamp * 1000);
             }
 
-            // 记录关键指标的数值方便直观监控
+            // 收集关键指标用于告警检查
             if ($type === 'cpu') {
-                Log::info("CPU 使用率: {$data['usage_percent']}% (Agent: {$agentId})");
+                $latestMetrics['cpu'] = $data['usage_percent'];
             } elseif ($type === 'memory') {
-                Log::info("内存使用率: {$data['usage_percent']}% (Agent: {$agentId})");
+                $latestMetrics['memory'] = $data['usage_percent'];
+            } elseif ($type === 'disk') {
+                $latestMetrics['disk'] = $data['usage_percent'];
             }
 
             try {
@@ -129,12 +130,22 @@ class MetricController extends Controller
                 };
                 $count++;
             } catch (\Exception $e) {
-                // 记录写入错误
-                Log::warning("指标写入失败 [类型: {$type}]: " . $e->getMessage());
+                Log::error("[存储失败] {$type}: " . $e->getMessage());
             }
         }
+
+        // 简洁的指标日志
+        $agent = \App\Models\Agent::find($agentId);
+        $hostname = $agent->hostname ?? $agentId;
+        $cpu = round($latestMetrics['cpu'] ?? 0, 1);
+        $mem = round($latestMetrics['memory'] ?? 0, 1);
+        $disk = round($latestMetrics['disk'] ?? 0, 1);
+        Log::info("[指标] {$hostname} | CPU:{$cpu}% | 内存:{$mem}% | 磁盘:{$disk}%");
         
-        Log::info("成功存储 {$count} 条指标数据 (Agent: {$agentId})");
+        // 触发异步告警检查
+        if (!empty($latestMetrics)) {
+            CheckAlerts::dispatch($agentId, $latestMetrics);
+        }
 
         return Response::success(['received' => $count], '', ResponseCodeEnum::METRIC_SAVE_SUCCESS);
     }

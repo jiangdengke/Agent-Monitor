@@ -8,5 +8,5 @@ agent:
   ip: ""       # Leave empty to auto-detect
 
 collector:
-  interval: 60 # Metrics collection interval in seconds
-  heartbeat_interval: 30 # Heartbeat interval in seconds
+  interval: 3 # Metrics collection interval in seconds
+  heartbeat_interval: 3 # Heartbeat interval in seconds
