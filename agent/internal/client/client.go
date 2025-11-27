@@ -115,3 +115,52 @@ func (c *Client) ReportMetrics(metrics []interface{}) error {
 
 	return nil
 }
+
+// MonitorTask 监控任务 (与 collector 中的定义保持一致)
+type MonitorTask struct {
+	ID                 string            `json:"id"`
+	Type               string            `json:"type"`
+	Target             string            `json:"target"`
+	Method             string            `json:"method,omitempty"`
+	Headers            map[string]string `json:"headers,omitempty"`
+	Body               string            `json:"body,omitempty"`
+	ExpectedStatusCode int               `json:"expected_status_code,omitempty"`
+	ExpectedContent    string            `json:"expected_content,omitempty"`
+	Timeout            int               `json:"timeout,omitempty"`
+}
+
+// GetMonitorTasks 获取监控任务列表
+func (c *Client) GetMonitorTasks() ([]MonitorTask, error) {
+	if c.agentID == "" {
+		return nil, fmt.Errorf("agent id not set")
+	}
+
+	type Response struct {
+		Code int `json:"code"`
+		Data struct {
+			Tasks []MonitorTask `json:"tasks"`
+		} `json:"data"`
+		Message string `json:"message"`
+	}
+
+	var result Response
+
+	resp, err := c.client.R().
+		SetResult(&result).
+		Get(fmt.Sprintf("/agents/%s/monitors", c.agentID))
+
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.IsError() {
+		return nil, fmt.Errorf("get monitor tasks failed: %s", resp.String())
+	}
+
+	return result.Data.Tasks, nil
+}
+
+// GetAgentID 获取 Agent ID
+func (c *Client) GetAgentID() string {
+	return c.agentID
+}
