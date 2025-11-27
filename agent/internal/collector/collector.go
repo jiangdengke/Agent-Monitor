@@ -132,3 +132,28 @@ func (c *Collector) CollectHost() (map[string]interface{}, error) {
 		"procs":            info.Procs,
 	}, nil
 }
+
+// CollectDiskIO 采集磁盘IO
+func (c *Collector) CollectDiskIO() ([]map[string]interface{}, error) {
+	ioStats, err := disk.IOCounters()
+	if err != nil {
+		return nil, err
+	}
+
+	var results []map[string]interface{}
+	for _, stat := range ioStats {
+		results = append(results, map[string]interface{}{
+			"device":           stat.Name,
+			"read_bytes":       stat.ReadBytes,
+			"write_bytes":      stat.WriteBytes,
+			"read_count":       stat.ReadCount,
+			"write_count":      stat.WriteCount,
+			"read_time":        stat.ReadTime,
+			"write_time":       stat.WriteTime,
+			"io_time":          stat.IoTime,
+			"iops_in_progress": stat.IopsInProgress,
+		})
+	}
+	return results, nil
+}
+

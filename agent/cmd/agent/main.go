@@ -28,56 +28,51 @@ func main() {
 	cli := client.New(cfg)
 	col := collector.New()
 
-	// 3. 注册 Agent
+	// 3. 注册 Agent或加载已有ID
     // 自动获取主机信息填充注册数据
     hostInfo, _ := host.Info()
     
-    registerData := map[string]interface{}{
-        "hostname": cfg.Agent.Hostname,
-        "ip":       cfg.Agent.IP, // 如果配置没填，后端有 IP 校验，这里可能需要自动获取 IP
-        "os":       hostInfo.OS,
-        "arch":     hostInfo.KernelArch,
-        "version":  "1.0.0", // Agent 版本
-    }
-    
-    if registerData["hostname"] == "" {
-        registerData["hostname"] = hostInfo.Hostname
-    }
-    
-    // 获取本机 IP (简单实现)
-    if registerData["ip"] == "" {
-        // 这里先硬编码或者依赖后端从 Request 获取
-        // 为了演示，假设用户在 config.yaml 里填了，或者我们发一个空字符串让后端处理
-        registerData["ip"] = "127.0.0.1" 
-    }
+    // 尝试读取本地存储的 Agent ID
+    agentIDFile := ".agent_id"
+    if idBytes, err := os.ReadFile(agentIDFile); err == nil && len(idBytes) > 0 {
+        agentID := string(idBytes)
+        log.Printf("Loaded existing Agent ID: %s", agentID)
+        cli.SetAgentID(agentID)
+    } else {
+        // 本地没有 ID，进行注册
+        registerData := map[string]interface{}{
+            "hostname": cfg.Agent.Hostname,
+            "ip":       cfg.Agent.IP, 
+            "os":       hostInfo.OS,
+            "arch":     hostInfo.KernelArch,
+            "version":  "1.0.0", // Agent 版本
+        }
+        
+        if registerData["hostname"] == "" {
+            registerData["hostname"] = hostInfo.Hostname
+        }
+        
+        // 获取本机 IP (简单实现)
+        if registerData["ip"] == "" || registerData["ip"] == "127.0.0.1" {
+            // 尝试获取真实 IP，这里简单处理，如果配置没填且无法获取，使用本地回环或报错
+            // 实际生产中应遍历网卡获取非回环 IP
+            registerData["ip"] = "127.0.0.1" 
+        }
 
-	log.Println("Registering agent...")
-    // 注意：这里 register 逻辑需要根据后端实际返回调整
-    // 目前后端 register 接口返回的是 Agent 对象
-    // 我们暂时无法从 Register 方法的返回值直接拿到 ID (因为 client.go 里还没写完整解析)
-    // 所以这里我们先模拟一下，或者假设 client.Register 内部已经处理好了 ID
-    // 为了跑通，我们需要完善 client.go 的 Register 解析逻辑，但这里先假设成功
-	_, err = cli.Register(registerData)
-	if err != nil {
-		log.Printf("Register warning: %v. (If agent already exists, this is fine)", err)
-	}
-    
-    // 重要：我们需要拿到 Agent ID。
-    // 由于后端 register 接口在 agent 已存在时也会返回 agent 信息
-    // 我们可以把 hostname 当做唯一标识去后端查询，或者在本地缓存 ID
-    // 简化起见：我们假设 config.yaml 里手动填了 ID，或者我们通过其他方式获取
-    // 既然是第一次跑，我们先硬编码一个 ID 测试，或者稍后修改 client.go 自动保存 ID
-    
-    // 临时方案：尝试从 config 获取 agent_id，如果没有，需要一种机制获取
-    // 在真实场景中，注册成功后应该把 ID 写入本地文件
-    
-    // 为了演示方便，我们先不 set ID，让 Client 报错，提醒用户填 ID 或完善注册逻辑
-    // 或者，我们在 config.yaml 加一个 agent_id 字段
-    
-    // 假设注册接口返回了 ID，我们需要去 client.go 把解析逻辑补全
-    // 现在先跳过，假设用户手动在 main.go 里填 ID 测试
-    
-    // cli.SetAgentID("your-uuid-here") 
+        log.Println("Registering agent...")
+        id, err := cli.Register(registerData)
+        if err != nil {
+            log.Fatalf("Failed to register agent: %v", err)
+        }
+        
+        log.Printf("Agent registered successfully. ID: %s", id)
+        cli.SetAgentID(id)
+        
+        // 保存 ID 到本地
+        if err := os.WriteFile(agentIDFile, []byte(id), 0644); err != nil {
+            log.Printf("Warning: Failed to save agent ID to file: %v", err)
+        }
+    } 
 
 	// 4. 启动定时器
 	tickerMetric := time.NewTicker(time.Duration(cfg.Collector.Interval) * time.Second)
@@ -142,6 +137,17 @@ func collectAndReport(cli *client.Client, col *collector.Collector) {
             "timestamp": timestamp,
 		})
 	}
+
+    // Disk IO
+    if diskIOs, err := col.CollectDiskIO(); err == nil {
+        for _, data := range diskIOs {
+            metrics = append(metrics, map[string]interface{}{
+                "type":      "disk_io",
+                "data":      data,
+                "timestamp": timestamp,
+            })
+        }
+    }
     
     // Network
     if data, err := col.CollectNetwork(); err == nil {

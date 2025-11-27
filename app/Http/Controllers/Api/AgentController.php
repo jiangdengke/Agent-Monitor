@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Agent;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 use Jiannei\Response\Laravel\Support\Facades\Response;
 
 class AgentController extends Controller
@@ -37,6 +38,9 @@ class AgentController extends Controller
                 'status' => 1,
             ]);
             $agent->updateHeartbeat();
+            
+            Log::info("探针已更新: {$agent->hostname} ({$agent->ip})");
+            
             return Response::success($agent, '', ResponseCodeEnum::AGENT_UPDATE_SUCCESS);
         }
 
@@ -50,6 +54,9 @@ class AgentController extends Controller
             'version' => $validated['version'] ?? '',
             'status' => 1,
         ]);
+        
+        Log::info("新探针已注册: {$agent->hostname} ({$agent->ip})");
+        
         return Response::success($agent, '', ResponseCodeEnum::AGENT_REGISTER_SUCCESS);
     }
 
@@ -65,6 +72,9 @@ class AgentController extends Controller
         $agent->updateHeartbeat();
         $agent->status = 1;
         $agent->save();
+        
+        Log::info("收到探针心跳: {$agent->hostname} ({$agent->id})");
+        
         return Response::success([
             'agent_id' => $agent->id,
             'last_seen_at' => $agent->last_seen_at,

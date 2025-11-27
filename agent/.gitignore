@@ -1,0 +1,9 @@
+# Binaries
+agent
+agent.exe
+
+# Runtime data
+.agent_id
+
+# Logs
+*.log

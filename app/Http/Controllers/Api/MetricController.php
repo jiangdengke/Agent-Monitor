@@ -16,6 +16,7 @@ use App\Models\NetworkMetric;
 use App\Models\TemperatureMetric;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Jiannei\Response\Laravel\Support\Facades\Response;
 
 class MetricController extends Controller
@@ -89,6 +90,8 @@ class MetricController extends Controller
         $agentId = $validated['agent_id'];
         $metrics = $validated['metrics'];
         $count = 0;
+        
+        Log::info("收到 " . count($metrics) . " 条指标数据，来自 Agent: {$agentId}");
 
         foreach ($metrics as $metricData) {
             if (!isset($metricData['type']) || !isset($metricData['data'])) {
@@ -101,6 +104,13 @@ class MetricController extends Controller
             // 如果 data 中没有 timestamp，则使用当前时间（外层可能有，或者默认当前）
             if (!isset($data['timestamp'])) {
                  $data['timestamp'] = $metricData['timestamp'] ?? (now()->timestamp * 1000);
+            }
+
+            // 记录关键指标的数值方便直观监控
+            if ($type === 'cpu') {
+                Log::info("CPU 使用率: {$data['usage_percent']}% (Agent: {$agentId})");
+            } elseif ($type === 'memory') {
+                Log::info("内存使用率: {$data['usage_percent']}% (Agent: {$agentId})");
             }
 
             try {
@@ -119,10 +129,12 @@ class MetricController extends Controller
                 };
                 $count++;
             } catch (\Exception $e) {
-                // 忽略单个指标的写入错误，继续处理下一个
-                // Log::warning("Metric write failed: " . $e->getMessage());
+                // 记录写入错误
+                Log::warning("指标写入失败 [类型: {$type}]: " . $e->getMessage());
             }
         }
+        
+        Log::info("成功存储 {$count} 条指标数据 (Agent: {$agentId})");
 
         return Response::success(['received' => $count], '', ResponseCodeEnum::METRIC_SAVE_SUCCESS);
     }

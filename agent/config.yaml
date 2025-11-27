@@ -1,5 +1,5 @@
 server:
-  url: "http://localhost:8000/api"
+  url: "http://127.0.0.1:8000/api"
   api_key: "ak_u2e2aey0qqh0ggUsy0P4F4bN0olIPX0p"
 
 agent:
