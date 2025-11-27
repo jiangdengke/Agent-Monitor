@@ -5,12 +5,90 @@ namespace App\Services;
 use App\Models\AlertConfig;
 use App\Models\AlertRecord;
 use App\Models\Agent;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 
 class AlertService
 {
+    // ==================== 告警配置 CRUD ====================
+
+    /**
+     * 创建告警配置
+     */
+    public function createConfig(array $data): AlertConfig
+    {
+        return AlertConfig::create($data);
+    }
+
+    /**
+     * 更新告警配置
+     */
+    public function updateConfig(string $id, array $data): ?AlertConfig
+    {
+        $config = AlertConfig::find($id);
+        if (!$config) {
+            return null;
+        }
+
+        $config->update($data);
+        return $config;
+    }
+
+    /**
+     * 删除告警配置
+     */
+    public function deleteConfig(string $id): bool
+    {
+        $config = AlertConfig::find($id);
+        if (!$config) {
+            return false;
+        }
+
+        $config->delete();
+        return true;
+    }
+
+    /**
+     * 获取告警配置详情
+     */
+    public function findConfig(string $id): ?AlertConfig
+    {
+        return AlertConfig::find($id);
+    }
+
+    /**
+     * 获取探针的告警配置列表
+     */
+    public function listConfigsByAgent(string $agentId): Collection
+    {
+        return AlertConfig::where('agent_id', $agentId)->get();
+    }
+
+    /**
+     * 获取告警记录列表
+     */
+    public function listRecords(?string $agentId, int $limit = 20, int $offset = 0): array
+    {
+        $query = AlertRecord::query()->orderBy('fired_at', 'desc');
+
+        if ($agentId) {
+            $query->where('agent_id', $agentId);
+        }
+
+        $total = $query->count();
+        $records = $query->skip($offset)->take($limit)->get();
+
+        return [
+            'records' => $records,
+            'total' => $total,
+            'limit' => $limit,
+            'offset' => $offset,
+        ];
+    }
+
+    // ==================== 告警检查逻辑 ====================
+
     /**
      * 检查所有指标并触发告警
      *
