@@ -39,6 +39,18 @@ class MetricController extends Controller
     }
 
     /**
+     * 获取最新指标
+     */
+    public function latest(Request $request, string $agent_id): JsonResponse
+    {
+        $type = $request->query('type');
+
+        $result = $this->metricService->getLatest($agent_id, $type);
+
+        return Response::success($result);
+    }
+
+    /**
      * 批量上报指标
      */
     public function store(Request $request): JsonResponse

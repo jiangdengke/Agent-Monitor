@@ -24,10 +24,16 @@ enum ResponseCodeEnum: int
     case DATABASE_ERROR = 500003;
 
     // ==================== API Key 认证模块（1xx）====================
+    // 成功
+    case API_KEY_CREATE_SUCCESS = 200101;
+    case API_KEY_UPDATE_SUCCESS = 200102;
+    case API_KEY_DELETE_SUCCESS = 200103;
+
     // 客户端错误
     case API_KEY_REQUIRED = 400101;
     case API_KEY_INVALID = 400102;
     case API_KEY_EXPIRED = 400103;
+    case API_KEY_NOT_FOUND = 400104;
 
     // ==================== Agent 探针模块（2xx）====================
     // 成功

@@ -191,4 +191,30 @@ class MetricService
     {
         return array_keys(self::TYPE_MODEL_MAP);
     }
+
+    /**
+     * 获取 Agent 的最新指标
+     */
+    public function getLatest(string $agentId, ?string $type = null): array
+    {
+        $types = $type ? [$type] : ['cpu', 'memory', 'disk', 'disk_io', 'network', 'load', 'gpu', 'temperature'];
+        $result = [];
+
+        foreach ($types as $t) {
+            $modelClass = self::TYPE_MODEL_MAP[$t] ?? null;
+            if (!$modelClass) {
+                continue;
+            }
+
+            $latest = $modelClass::where('agent_id', $agentId)
+                ->orderBy('timestamp', 'desc')
+                ->first();
+
+            if ($latest) {
+                $result[$t] = $latest;
+            }
+        }
+
+        return $result;
+    }
 }
