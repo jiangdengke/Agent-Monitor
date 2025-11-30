@@ -51,6 +51,19 @@ class Agent extends Model
         'updated_at' => 'integer',
     ];
 
+    /**
+     * 追加到 JSON 的访问器
+     */
+    protected $appends = ['ip_address'];
+
+    /**
+     * IP 地址访问器（兼容前端字段名）
+     */
+    public function getIpAddressAttribute(): ?string
+    {
+        return $this->ip;
+    }
+
 
     /**
      * 模型启动方法

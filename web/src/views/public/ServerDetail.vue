@@ -1,8 +1,9 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { NCard, NGrid, NGridItem, NTag, NProgress, NDescriptions, NDescriptionsItem, NButton, NSpace } from 'naive-ui'
 import { getPublicAgentDetail, getPublicAgentLatestMetrics } from '../../api/public'
+import { useAgentChannel } from '../../composables/useMetricsChannel'
 
 const route = useRoute()
 const router = useRouter()
@@ -12,13 +13,37 @@ const agent = ref(null)
 const metrics = ref({})
 let refreshTimer = null
 
+const agentId = computed(() => route.params.id)
+
+// WebSocket 实时更新
+const handleMetricsUpdate = (data) => {
+  if (data.agent_id === agentId.value) {
+    // 更新指标数据
+    const m = data.metrics
+    metrics.value = {
+      ...metrics.value,
+      cpu: { ...metrics.value.cpu, usage_percent: m.cpu_usage },
+      memory: { ...metrics.value.memory, usage_percent: m.memory_usage },
+      disk: { ...metrics.value.disk, usage_percent: m.disk_usage },
+      network: {
+        ...metrics.value.network,
+        bytes_sent_rate: m.network_tx_rate,
+        bytes_recv_rate: m.network_rx_rate,
+      },
+      load: { ...metrics.value.load, load1: m.load1 },
+    }
+  }
+}
+
+// 订阅 WebSocket 频道
+useAgentChannel(agentId.value, handleMetricsUpdate)
+
 const fetchData = async () => {
   loading.value = true
   try {
-    const agentId = route.params.id
     const [agentRes, metricsRes] = await Promise.all([
-      getPublicAgentDetail(agentId),
-      getPublicAgentLatestMetrics(agentId)
+      getPublicAgentDetail(agentId.value),
+      getPublicAgentLatestMetrics(agentId.value)
     ])
     agent.value = agentRes
     metrics.value = metricsRes

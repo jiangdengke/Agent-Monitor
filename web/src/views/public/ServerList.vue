@@ -5,6 +5,7 @@ import { NCard, NGrid, NGridItem, NTag, NProgress, NSpin } from 'naive-ui'
 import PublicHeader from '../../components/PublicHeader.vue'
 import PublicFooter from '../../components/PublicFooter.vue'
 import { getPublicAgentList, getPublicAgentStatistics } from '../../api/public'
+import { useMetricsChannel, useAgentsChannel } from '../../composables/useMetricsChannel'
 
 const router = useRouter()
 
@@ -12,6 +13,46 @@ const loading = ref(false)
 const agents = ref([])
 const statistics = ref({ total: 0, online: 0, offline: 0 })
 const viewMode = ref('grid')
+
+// WebSocket 实时更新
+const handleMetricsUpdate = (data) => {
+  const index = agents.value.findIndex(a => a.id === data.agent_id)
+  if (index !== -1) {
+    const metrics = data.metrics
+    agents.value[index] = {
+      ...agents.value[index],
+      cpu_usage: metrics.cpu_usage,
+      memory_usage: metrics.memory_usage,
+      disk_usage: metrics.disk_usage,
+      network_tx_rate: metrics.network_tx_rate,
+      network_rx_rate: metrics.network_rx_rate,
+      network_tx_total: metrics.network_tx_total,
+      network_rx_total: metrics.network_rx_total,
+    }
+  }
+}
+
+const handleStatusChange = (data) => {
+  const index = agents.value.findIndex(a => a.id === data.agent_id)
+  if (index !== -1) {
+    agents.value[index].status = data.status
+  }
+  // 更新统计
+  fetchStatistics()
+}
+
+// 订阅 WebSocket 频道
+useMetricsChannel(handleMetricsUpdate)
+useAgentsChannel(handleStatusChange)
+
+const fetchStatistics = async () => {
+  try {
+    const statsRes = await getPublicAgentStatistics()
+    statistics.value = statsRes
+  } catch (error) {
+    console.error('获取统计数据失败', error)
+  }
+}
 
 const fetchData = async () => {
   loading.value = true

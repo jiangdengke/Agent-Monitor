@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\AgentStatusChanged;
 use App\Models\Agent;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Log;
@@ -39,6 +40,9 @@ class AgentService
 
             Log::info("探针已更新: {$agent->hostname} ({$agent->ip})");
 
+            // 广播状态变更
+            event(new AgentStatusChanged($agent->id, $agent->hostname, 1));
+
             return ['agent' => $agent, 'isNew' => false];
         }
 
@@ -53,6 +57,9 @@ class AgentService
         ]);
 
         Log::info("新探针已注册: {$agent->hostname} ({$agent->ip})");
+
+        // 广播新探针上线
+        event(new AgentStatusChanged($agent->id, $agent->hostname, 1));
 
         return ['agent' => $agent, 'isNew' => true];
     }

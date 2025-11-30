@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\MetricsUpdated;
 use App\Jobs\CheckAlerts;
 use App\Models\Agent;
 use App\Models\CpuMetric;
@@ -74,6 +75,9 @@ class MetricService
         // 触发告警检查
         $this->triggerAlertCheck($agentId, $latestMetrics);
 
+        // 广播指标更新事件
+        $this->broadcastMetricsUpdate($agentId, $latestMetrics);
+
         return [
             'count' => $count,
             'latestMetrics' => $latestMetrics,
@@ -134,6 +138,32 @@ class MetricService
     {
         if (!empty($latestMetrics)) {
             CheckAlerts::dispatch($agentId, $latestMetrics);
+        }
+    }
+
+    /**
+     * 广播指标更新事件
+     */
+    private function broadcastMetricsUpdate(string $agentId, array $latestMetrics): void
+    {
+        if (!empty($latestMetrics)) {
+            $agent = Agent::find($agentId);
+            $metrics = $this->getLatest($agentId);
+
+            // 构建广播数据
+            $broadcastData = [
+                'hostname' => $agent?->hostname,
+                'cpu_usage' => $metrics['cpu']->usage_percent ?? 0,
+                'memory_usage' => $metrics['memory']->usage_percent ?? 0,
+                'disk_usage' => $metrics['disk']->usage_percent ?? 0,
+                'network_tx_rate' => $metrics['network']->bytes_sent_rate ?? 0,
+                'network_rx_rate' => $metrics['network']->bytes_recv_rate ?? 0,
+                'network_tx_total' => $metrics['network']->bytes_sent ?? 0,
+                'network_rx_total' => $metrics['network']->bytes_recv ?? 0,
+                'load1' => $metrics['load']->load1 ?? 0,
+            ];
+
+            event(new MetricsUpdated($agentId, $broadcastData));
         }
     }
 
