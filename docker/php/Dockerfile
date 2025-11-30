@@ -1,5 +1,8 @@
 FROM php:8.3-fpm-alpine
 
+# 使用阿里云镜像源
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
+
 # 安装系统依赖
 RUN apk add --no-cache \
     git \
@@ -27,14 +30,11 @@ WORKDIR /var/www/html
 # 先复制 composer 文件以利用缓存
 COPY composer.json composer.lock ./
 
-# 安装 PHP 依赖
-RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
+# 安装 PHP 依赖（跳过 scripts 避免数据库连接问题）
+RUN composer install --no-dev --no-scripts --prefer-dist --optimize-autoloader
 
 # 复制项目文件
 COPY . .
-
-# 生成 autoloader
-RUN composer dump-autoload --optimize
 
 # 设置权限
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache

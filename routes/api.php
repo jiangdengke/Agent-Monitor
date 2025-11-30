@@ -8,6 +8,18 @@ use App\Http\Controllers\Api\AlertController;
 use App\Http\Controllers\Api\MonitorController;
 use App\Http\Controllers\Api\ApiKeyController;
 use App\Http\Controllers\Api\PropertyController;
+use App\Http\Controllers\AuthController;
+
+// 认证路由
+Route::prefix('auth')->group(function () {
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::get('/me', [AuthController::class, 'me']);
+    });
+});
 
 // 公共 API（无需认证）
 Route::prefix('public')->group(function () {
