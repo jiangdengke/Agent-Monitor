@@ -65,7 +65,7 @@ class AgentController extends Controller
         $agents = $this->agentService->list($filters, $pageSize);
 
         return Response::success([
-            'items' => $agents->items(),
+            'items' => $agents->getCollection(),
             'total' => $agents->total(),
         ], '', ResponseCodeEnum::SUCCESS);
     }

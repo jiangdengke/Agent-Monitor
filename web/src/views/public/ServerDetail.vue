@@ -2,7 +2,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { NCard, NGrid, NGridItem, NTag, NProgress, NDescriptions, NDescriptionsItem, NButton, NSpace } from 'naive-ui'
-import { getAgentDetail, getAgentLatestMetrics } from '../../api/agent'
+import { getPublicAgentDetail, getPublicAgentLatestMetrics } from '../../api/public'
 
 const route = useRoute()
 const router = useRouter()
@@ -17,8 +17,8 @@ const fetchData = async () => {
   try {
     const agentId = route.params.id
     const [agentRes, metricsRes] = await Promise.all([
-      getAgentDetail(agentId),
-      getAgentLatestMetrics(agentId)
+      getPublicAgentDetail(agentId),
+      getPublicAgentLatestMetrics(agentId)
     ])
     agent.value = agentRes
     metrics.value = metricsRes
@@ -64,8 +64,8 @@ onUnmounted(() => {
         <n-space align="center">
           <n-button text style="color: #fff" @click="router.push('/')">← 返回</n-button>
           <h1>{{ agent?.hostname || '服务器详情' }}</h1>
-          <n-tag :type="agent?.status === 'online' ? 'success' : 'error'" size="small">
-            {{ agent?.status === 'online' ? '在线' : '离线' }}
+          <n-tag :type="agent?.status === 1 ? 'success' : 'error'" size="small">
+            {{ agent?.status === 1 ? '在线' : '离线' }}
           </n-tag>
         </n-space>
       </div>

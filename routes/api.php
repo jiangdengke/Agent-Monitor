@@ -9,6 +9,19 @@ use App\Http\Controllers\Api\MonitorController;
 use App\Http\Controllers\Api\ApiKeyController;
 use App\Http\Controllers\Api\PropertyController;
 
+// 公共 API（无需认证）
+Route::prefix('public')->group(function () {
+    // 探针公共接口
+    Route::get('/agents', [AgentController::class, 'index']);
+    Route::get('/agents/statistics', [AgentController::class, 'statistics']);
+    Route::get('/agents/{id}', [AgentController::class, 'show']);
+    Route::get('/agents/{agent_id}/metrics/latest', [MetricController::class, 'latest']);
+
+    // 监控公共接口
+    Route::get('/monitors', [MonitorController::class, 'listTasks']);
+    Route::get('/monitors/overview', [MonitorController::class, 'getOverviewStats']);
+});
+
 Route::middleware('auth.apikey')->group(function () {
     // Agent路由
     Route::prefix('agents')->group(function () {

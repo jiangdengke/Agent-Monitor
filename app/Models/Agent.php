@@ -45,12 +45,12 @@ class Agent extends Model
      * 字段类型转换
      */
     protected $casts = [
-        'status' => 'integer',
         'expire_time' => 'integer',
         'last_seen_at' => 'integer',
         'created_at' => 'integer',
         'updated_at' => 'integer',
     ];
+
 
     /**
      * 模型启动方法

@@ -1,8 +1,22 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, h } from 'vue'
 import { useRouter } from 'vue-router'
-import { NCard, NDataTable, NTag, NButton, NSpace, NStatistic, NGrid, NGridItem, useMessage } from 'naive-ui'
-import { getAgentList, getAgentStatistics } from '../../api/agent'
+import {
+  NCard,
+  NDataTable,
+  NTag,
+  NButton,
+  NSpace,
+  NStatistic,
+  NGrid,
+  NGridItem,
+  NModal,
+  NForm,
+  NFormItem,
+  NInput,
+  useMessage
+} from 'naive-ui'
+import { getAgentList, getAgentStatistics, updateAgent } from '../../api/agent'
 
 const router = useRouter()
 const message = useMessage()
@@ -20,6 +34,19 @@ const pagination = ref({
   itemCount: 0
 })
 
+const showEditModal = ref(false)
+const editLoading = ref(false)
+const editForm = ref({
+  id: '',
+  hostname: '',
+  location: '',
+  description: ''
+})
+const editFormRules = {
+  hostname: { required: true, message: '请输入主机名', trigger: 'blur' }
+}
+const editFormRef = ref(null)
+
 const columns = [
   {
     title: '主机名',
@@ -36,6 +63,11 @@ const columns = [
     key: 'ip_address'
   },
   {
+    title: '位置',
+    key: 'location',
+    render: (row) => row.location || '-'
+  },
+  {
     title: '操作系统',
     key: 'os',
     render: (row) => row.os || '-'
@@ -44,7 +76,7 @@ const columns = [
     title: '状态',
     key: 'status',
     render: (row) => {
-      const isOnline = row.status === 'online'
+      const isOnline = row.status === 1
       return h(NTag, {
         type: isOnline ? 'success' : 'error',
         size: 'small'
@@ -62,13 +94,20 @@ const columns = [
   {
     title: '操作',
     key: 'actions',
+    width: 150,
     render: (row) => {
-      return h(NSpace, null, {
+      return h(NSpace, { size: 'small' }, {
         default: () => [
           h(NButton, {
             size: 'small',
             onClick: () => router.push(`/admin/agents/${row.id}`)
-          }, { default: () => '详情' })
+          }, { default: () => '详情' }),
+          h(NButton, {
+            size: 'small',
+            type: 'primary',
+            secondary: true,
+            onClick: () => handleEdit(row)
+          }, { default: () => '编辑' })
         ]
       })
     }
@@ -99,11 +138,43 @@ const handlePageChange = (page) => {
   fetchData()
 }
 
+const handleEdit = (row) => {
+  editForm.value = {
+    id: row.id,
+    hostname: row.hostname || '',
+    location: row.location || '',
+    description: row.description || ''
+  }
+  showEditModal.value = true
+}
+
+const handleEditSubmit = async () => {
+  try {
+    await editFormRef.value?.validate()
+  } catch (errors) {
+    return
+  }
+
+  editLoading.value = true
+  try {
+    await updateAgent(editForm.value.id, {
+      hostname: editForm.value.hostname,
+      location: editForm.value.location,
+      description: editForm.value.description
+    })
+    message.success('更新成功')
+    showEditModal.value = false
+    fetchData()
+  } catch (error) {
+    message.error('更新失败')
+  } finally {
+    editLoading.value = false
+  }
+}
+
 onMounted(() => {
   fetchData()
 })
-
-import { h } from 'vue'
 </script>
 
 <template>
@@ -143,6 +214,45 @@ import { h } from 'vue'
         @update:page="handlePageChange"
       />
     </n-card>
+
+    <n-modal
+      v-model:show="showEditModal"
+      preset="card"
+      title="编辑探针"
+      style="width: 500px"
+      :mask-closable="false"
+    >
+      <n-form
+        ref="editFormRef"
+        :model="editForm"
+        :rules="editFormRules"
+        label-placement="left"
+        label-width="80"
+      >
+        <n-form-item label="主机名" path="hostname">
+          <n-input v-model:value="editForm.hostname" placeholder="请输入主机名" />
+        </n-form-item>
+        <n-form-item label="位置" path="location">
+          <n-input v-model:value="editForm.location" placeholder="请输入服务器位置，如：香港、美国等" />
+        </n-form-item>
+        <n-form-item label="描述" path="description">
+          <n-input
+            v-model:value="editForm.description"
+            type="textarea"
+            placeholder="请输入描述信息"
+            :rows="3"
+          />
+        </n-form-item>
+      </n-form>
+      <template #footer>
+        <n-space justify="end">
+          <n-button @click="showEditModal = false">取消</n-button>
+          <n-button type="primary" :loading="editLoading" @click="handleEditSubmit">
+            保存
+          </n-button>
+        </n-space>
+      </template>
+    </n-modal>
   </div>
 </template>
 

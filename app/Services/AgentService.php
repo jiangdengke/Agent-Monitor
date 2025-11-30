@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Log;
 
 class AgentService
 {
+    public function __construct(
+        private readonly MetricService $metricService
+    ) {}
     /**
      * 允许排序的字段
      */
@@ -78,7 +81,7 @@ class AgentService
     }
 
     /**
-     * 获取探针列表
+     * 获取探针列表（带最新指标）
      *
      * @param array $filters
      * @param int $pageSize
@@ -109,7 +112,24 @@ class AgentService
             $query->orderBy('last_seen_at', 'desc');
         }
 
-        return $query->paginate($pageSize);
+        $paginator = $query->paginate($pageSize);
+
+        // 为每个 Agent 附加最新指标
+        $paginator->getCollection()->transform(function ($agent) {
+            $metrics = $this->metricService->getLatest($agent->id);
+
+            $agent->cpu_usage = $metrics['cpu']->usage_percent ?? 0;
+            $agent->memory_usage = $metrics['memory']->usage_percent ?? 0;
+            $agent->disk_usage = $metrics['disk']->usage_percent ?? 0;
+            $agent->network_tx_rate = $metrics['network']->bytes_sent_rate ?? 0;
+            $agent->network_rx_rate = $metrics['network']->bytes_recv_rate ?? 0;
+            $agent->network_tx_total = $metrics['network']->bytes_sent ?? 0;
+            $agent->network_rx_total = $metrics['network']->bytes_recv ?? 0;
+
+            return $agent;
+        });
+
+        return $paginator;
     }
 
     /**
