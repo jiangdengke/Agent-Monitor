@@ -28,7 +28,10 @@ class AgentController extends Controller
             'version' => 'nullable|string|max:50',
         ]);
 
-        $result = $this->agentService->register($validated);
+        // 获取当前请求的 API Key（由中间件设置）
+        $apiKey = $request->input('api_key');
+
+        $result = $this->agentService->register($validated, $apiKey);
 
         if ($result['isNew']) {
             return Response::success($result['agent'], '', ResponseCodeEnum::AGENT_REGISTER_SUCCESS);

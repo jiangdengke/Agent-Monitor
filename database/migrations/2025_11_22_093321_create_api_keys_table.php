@@ -23,6 +23,7 @@ return new class extends Migration
 
             // === 基本信息 ===
             $table->string('name')->index(); // API Key 名称，便于识别用途
+            $table->string('agent_id')->nullable()->index(); // 绑定的 Agent ID
             $table->string('key')->unique(); // API Key 密钥字符串，用于认证
             $table->boolean('enabled')->index()->default(true); // 是否启用：true=启用, false=禁用
             $table->string('created_by')->index(); // 创建人 ID，记录谁创建了此密钥

@@ -26,6 +26,7 @@ class ApiKey extends Model
     protected $fillable = [
         'id',
         'name',
+        'agent_id',
         'key',
         'enabled',
         'created_by',
@@ -65,14 +66,42 @@ class ApiKey extends Model
     }
 
     /**
+     * 关联的 Agent
+     */
+    public function agent()
+    {
+        return $this->belongsTo(Agent::class, 'agent_id');
+    }
+
+    /**
      * 检查 API Key 是否有效
      *
      * @return bool
      */
     public function isValid(): bool
     {
-        // 检查是否启用
         return $this->enabled === true;
+    }
+
+    /**
+     * 检查 API Key 是否可用于指定 Agent
+     *
+     * @param string|null $agentId
+     * @return bool
+     */
+    public function isValidForAgent(?string $agentId): bool
+    {
+        if (!$this->enabled) {
+            return false;
+        }
+
+        // 如果 API Key 未绑定 Agent，允许注册新 Agent
+        if (empty($this->agent_id)) {
+            return true;
+        }
+
+        // 如果已绑定，检查是否匹配
+        return $this->agent_id === $agentId;
     }
 
     /**

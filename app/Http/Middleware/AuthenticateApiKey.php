@@ -20,20 +20,29 @@ class AuthenticateApiKey
      */
     public function handle(Request $request, Closure $next): Response
     {
-
         // 获取API key
         $apiKey = $request->header('X-API-Key') ?? $request->bearerToken();
         if (!$apiKey) {
             return ApiResponse::fail('', ResponseCodeEnum::API_KEY_REQUIRED);
         }
+
         // 查找API Key
         $key = ApiKey::where('key', $apiKey)->first();
         if (!$key) {
             return ApiResponse::fail('', ResponseCodeEnum::API_KEY_INVALID);
         }
-        // 检查是否过期
+
+        // 检查是否启用
         if (!$key->isValid()) {
             return ApiResponse::fail('', ResponseCodeEnum::API_KEY_EXPIRED);
+        }
+
+        // 获取请求中的 agent_id（可能来自路由参数或请求体）
+        $agentId = $request->route('id') ?? $request->input('agent_id');
+
+        // 如果 API Key 已绑定 Agent，验证是否匹配
+        if ($key->agent_id && $agentId && $key->agent_id !== $agentId) {
+            return ApiResponse::fail('API Key 与服务器不匹配', ResponseCodeEnum::API_KEY_INVALID);
         }
 
         // 将api key信息附加到请求，供后续控制器使用

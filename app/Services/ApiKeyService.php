@@ -59,7 +59,7 @@ class ApiKeyService
      */
     public function list(array $filters, int $pageSize = 10): LengthAwarePaginator
     {
-        $query = ApiKey::query();
+        $query = ApiKey::with('agent');
 
         if (!empty($filters['name'])) {
             $query->where('name', 'like', '%' . $filters['name'] . '%');
@@ -71,6 +71,38 @@ class ApiKeyService
         $query->orderBy('created_at', 'desc');
 
         return $query->paginate($pageSize);
+    }
+
+    /**
+     * 绑定 API Key 到 Agent
+     */
+    public function bindAgent(string $id, string $agentId): ?ApiKey
+    {
+        $apiKey = ApiKey::find($id);
+        if (!$apiKey) {
+            return null;
+        }
+
+        $apiKey->agent_id = $agentId;
+        $apiKey->save();
+
+        return $apiKey;
+    }
+
+    /**
+     * 解绑 API Key
+     */
+    public function unbindAgent(string $id): ?ApiKey
+    {
+        $apiKey = ApiKey::find($id);
+        if (!$apiKey) {
+            return null;
+        }
+
+        $apiKey->agent_id = null;
+        $apiKey->save();
+
+        return $apiKey;
     }
 
     /**

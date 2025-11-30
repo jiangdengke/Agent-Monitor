@@ -1,18 +1,36 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { NCard, NGrid, NGridItem, NTag, NProgress, NSpin } from 'naive-ui'
-import PublicHeader from '../../components/PublicHeader.vue'
-import PublicFooter from '../../components/PublicFooter.vue'
-import { getPublicAgentList, getPublicAgentStatistics } from '../../api/public'
+import { NIcon, NButton, NButtonGroup, NSpin } from 'naive-ui'
+import {
+  DesktopOutline,
+  ServerOutline,
+  SpeedometerOutline,
+  HardwareChipOutline,
+  CloudUploadOutline,
+  SwapVerticalOutline,
+  GridOutline,
+  ListOutline,
+  LogInOutline,
+  LogoGithub,
+  FileTrayFullOutline,
+  LayersOutline,
+  HeartOutline
+} from '@vicons/ionicons5'
+import { getPublicAgentList } from '../../api/public'
 import { useMetricsChannel, useAgentsChannel } from '../../composables/useMetricsChannel'
 
 const router = useRouter()
 
 const loading = ref(false)
 const agents = ref([])
-const statistics = ref({ total: 0, online: 0, offline: 0 })
 const viewMode = ref('grid')
+const lastUpdateTime = ref('')
+
+const updateLastTime = () => {
+  const now = new Date()
+  lastUpdateTime.value = now.toLocaleTimeString('zh-CN', { hour12: false })
+}
 
 // WebSocket 实时更新
 const handleMetricsUpdate = (data) => {
@@ -29,6 +47,7 @@ const handleMetricsUpdate = (data) => {
       network_tx_total: metrics.network_tx_total,
       network_rx_total: metrics.network_rx_total,
     }
+    updateLastTime()
   }
 }
 
@@ -37,32 +56,17 @@ const handleStatusChange = (data) => {
   if (index !== -1) {
     agents.value[index].status = data.status
   }
-  // 更新统计
-  fetchStatistics()
 }
 
-// 订阅 WebSocket 频道
 useMetricsChannel(handleMetricsUpdate)
 useAgentsChannel(handleStatusChange)
-
-const fetchStatistics = async () => {
-  try {
-    const statsRes = await getPublicAgentStatistics()
-    statistics.value = statsRes
-  } catch (error) {
-    console.error('获取统计数据失败', error)
-  }
-}
 
 const fetchData = async () => {
   loading.value = true
   try {
-    const [listRes, statsRes] = await Promise.all([
-      getPublicAgentList({ pageSize: 100 }),
-      getPublicAgentStatistics()
-    ])
+    const listRes = await getPublicAgentList({ pageSize: 100 })
     agents.value = listRes.items || []
-    statistics.value = statsRes
+    updateLastTime()
   } catch (error) {
     console.error('获取数据失败', error)
   } finally {
@@ -88,14 +92,16 @@ const formatSpeed = (bytesPerSec) => {
 }
 
 const getProgressColor = (percent) => {
-  if (percent >= 90) return '#d03050'
-  if (percent >= 70) return '#f0a020'
-  return '#18a058'
+  if (percent >= 90) return '#ef4444'
+  if (percent >= 70) return '#f59e0b'
+  return '#22c55e'
 }
 
-const gridCols = computed(() => {
-  return viewMode.value === 'grid' ? 3 : 1
-})
+const formatExpireDate = (timestamp) => {
+  if (!timestamp) return ''
+  const date = new Date(timestamp)
+  return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`
+}
 
 onMounted(() => {
   fetchData()
@@ -104,126 +110,204 @@ onMounted(() => {
 
 <template>
   <div class="server-list-page">
-    <PublicHeader v-model:viewMode="viewMode" :showViewToggle="true" />
+    <!-- 顶部导航 -->
+    <header class="header">
+      <div class="header-inner">
+        <div class="logo">
+          <span class="logo-icon">
+            <n-icon size="28"><ServerOutline /></n-icon>
+          </span>
+          <div class="logo-text">
+            <span class="logo-subtitle">SERVER MONITOR</span>
+            <span class="logo-title">设备监控</span>
+          </div>
+        </div>
 
-    <main class="main-content">
-      <div class="stats-bar">
-        <div class="stat-item">
-          <span class="stat-value">{{ statistics.total }}</span>
-          <span class="stat-label">服务器总数</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-value online">{{ statistics.online }}</span>
-          <span class="stat-label">在线</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-value offline">{{ statistics.offline }}</span>
-          <span class="stat-label">离线</span>
+        <div class="header-right">
+          <div class="last-update">
+            <span class="update-dot"></span>
+            最后更新: {{ lastUpdateTime }}
+          </div>
+
+          <n-button-group size="small">
+            <n-button
+              :type="viewMode === 'grid' ? 'primary' : 'default'"
+              @click="viewMode = 'grid'"
+            >
+              <template #icon>
+                <n-icon><GridOutline /></n-icon>
+              </template>
+            </n-button>
+            <n-button
+              :type="viewMode === 'list' ? 'primary' : 'default'"
+              @click="viewMode = 'list'"
+            >
+              <template #icon>
+                <n-icon><ListOutline /></n-icon>
+              </template>
+            </n-button>
+          </n-button-group>
+
+          <nav class="nav-links">
+            <a href="/" class="nav-link active">
+              <n-icon><DesktopOutline /></n-icon>
+              设备监控
+            </a>
+            <a href="/monitors" class="nav-link">
+              <n-icon><SpeedometerOutline /></n-icon>
+              服务监控
+            </a>
+          </nav>
+
+          <a href="https://github.com" target="_blank" class="github-link">
+            <n-icon size="20"><LogoGithub /></n-icon>
+          </a>
+
+          <n-button type="primary" size="small" @click="router.push('/login')">
+            <template #icon>
+              <n-icon><LogInOutline /></n-icon>
+            </template>
+            登录
+          </n-button>
         </div>
       </div>
+    </header>
 
+    <!-- 主内容区 -->
+    <main class="main-content">
       <n-spin :show="loading">
-        <n-grid :cols="gridCols" :x-gap="16" :y-gap="16" responsive="screen" class="server-grid">
-          <n-grid-item v-for="agent in agents" :key="agent.id">
-            <n-card hoverable :class="['server-card', viewMode]" @click="goToDetail(agent.id)">
-              <div class="card-header">
-                <div class="server-info">
-                  <span class="hostname">{{ agent.hostname || agent.id }}</span>
-                  <span class="location" v-if="agent.location">{{ agent.location }}</span>
-                </div>
-                <n-tag :type="agent.status === 1 ? 'success' : 'error'" size="small">
+        <div :class="['server-grid', viewMode]">
+          <div
+            v-for="agent in agents"
+            :key="agent.id"
+            class="server-card"
+            @click="goToDetail(agent.id)"
+          >
+            <!-- 卡片头部 -->
+            <div class="card-header">
+              <div class="header-left">
+                <span class="server-name">{{ agent.name || agent.hostname }}</span>
+                <span :class="['status-tag', agent.status === 1 ? 'online' : 'offline']">
+                  <span class="status-dot"></span>
                   {{ agent.status === 1 ? '在线' : '离线' }}
-                </n-tag>
+                </span>
               </div>
+              <span class="server-os">{{ agent.os || 'linux' }} · {{ agent.arch || 'amd64' }}</span>
+            </div>
 
-              <div class="card-body">
-                <div class="metrics-section">
-                  <div class="metric-row">
-                    <div class="metric-item">
-                      <div class="metric-header">
-                        <span class="metric-label">CPU</span>
-                        <span class="metric-value">{{ (agent.cpu_usage || 0).toFixed(1) }}%</span>
-                      </div>
-                      <n-progress
-                        type="line"
-                        :percentage="agent.cpu_usage || 0"
-                        :height="6"
-                        :border-radius="3"
-                        :fill-border-radius="3"
-                        :color="getProgressColor(agent.cpu_usage || 0)"
-                        :show-indicator="false"
-                      />
-                    </div>
-                    <div class="metric-item">
-                      <div class="metric-header">
-                        <span class="metric-label">内存</span>
-                        <span class="metric-value">{{ (agent.memory_usage || 0).toFixed(1) }}%</span>
-                      </div>
-                      <n-progress
-                        type="line"
-                        :percentage="agent.memory_usage || 0"
-                        :height="6"
-                        :border-radius="3"
-                        :fill-border-radius="3"
-                        :color="getProgressColor(agent.memory_usage || 0)"
-                        :show-indicator="false"
-                      />
-                    </div>
-                    <div class="metric-item">
-                      <div class="metric-header">
-                        <span class="metric-label">磁盘</span>
-                        <span class="metric-value">{{ (agent.disk_usage || 0).toFixed(1) }}%</span>
-                      </div>
-                      <n-progress
-                        type="line"
-                        :percentage="agent.disk_usage || 0"
-                        :height="6"
-                        :border-radius="3"
-                        :fill-border-radius="3"
-                        :color="getProgressColor(agent.disk_usage || 0)"
-                        :show-indicator="false"
-                      />
-                    </div>
-                  </div>
+            <!-- 服务器信息行 -->
+            <div class="info-row">
+              <span v-if="agent.platform" class="info-item">平台: {{ agent.platform }}</span>
+              <span v-if="agent.location" class="info-item">位置: {{ agent.location }}</span>
+              <span v-if="agent.expire_time" class="info-item expire">
+                到期: {{ formatExpireDate(agent.expire_time) }}
+              </span>
+            </div>
+
+            <!-- 资源指标 - 三列布局 -->
+            <div class="metrics-row">
+              <div class="metric-card">
+                <div class="metric-header">
+                  <span class="metric-icon cpu">
+                    <n-icon><HardwareChipOutline /></n-icon>
+                  </span>
+                  <span class="metric-label">CPU</span>
                 </div>
-
-                <div class="network-section">
-                  <div class="network-speed">
-                    <span class="speed-item">
-                      <span class="arrow up">↑</span>
-                      {{ formatSpeed(agent.network_tx_rate) }}
-                    </span>
-                    <span class="speed-item">
-                      <span class="arrow down">↓</span>
-                      {{ formatSpeed(agent.network_rx_rate) }}
-                    </span>
-                  </div>
-                  <div class="network-total">
-                    <span class="total-item">
-                      累计 ↑ {{ formatBytes(agent.network_tx_total) }}
-                    </span>
-                    <span class="total-item">
-                      累计 ↓ {{ formatBytes(agent.network_rx_total) }}
-                    </span>
-                  </div>
+                <div class="metric-value">{{ (agent.cpu_usage || 0).toFixed(1) }}%</div>
+                <div class="metric-bar">
+                  <div
+                    class="metric-bar-fill"
+                    :style="{
+                      width: Math.min(agent.cpu_usage || 0, 100) + '%',
+                      backgroundColor: getProgressColor(agent.cpu_usage || 0)
+                    }"
+                  ></div>
                 </div>
               </div>
 
-              <div class="card-footer">
-                <span class="ip">{{ agent.ip_address || '-' }}</span>
-                <span class="os">{{ agent.os || '-' }}</span>
+              <div class="metric-card">
+                <div class="metric-header">
+                  <span class="metric-icon memory">
+                    <n-icon><LayersOutline /></n-icon>
+                  </span>
+                  <span class="metric-label">内存</span>
+                </div>
+                <div class="metric-value">{{ (agent.memory_usage || 0).toFixed(1) }}%</div>
+                <div class="metric-bar">
+                  <div
+                    class="metric-bar-fill"
+                    :style="{
+                      width: Math.min(agent.memory_usage || 0, 100) + '%',
+                      backgroundColor: getProgressColor(agent.memory_usage || 0)
+                    }"
+                  ></div>
+                </div>
               </div>
-            </n-card>
-          </n-grid-item>
-        </n-grid>
+
+              <div class="metric-card">
+                <div class="metric-header">
+                  <span class="metric-icon disk">
+                    <n-icon><FileTrayFullOutline /></n-icon>
+                  </span>
+                  <span class="metric-label">磁盘</span>
+                </div>
+                <div class="metric-value">{{ (agent.disk_usage || 0).toFixed(1) }}%</div>
+                <div class="metric-bar">
+                  <div
+                    class="metric-bar-fill"
+                    :style="{
+                      width: Math.min(agent.disk_usage || 0, 100) + '%',
+                      backgroundColor: getProgressColor(agent.disk_usage || 0)
+                    }"
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 网络速率 -->
+            <div class="network-card">
+              <div class="network-left">
+                <span class="network-icon">
+                  <n-icon><SwapVerticalOutline /></n-icon>
+                </span>
+                <span class="network-label">实时速率</span>
+              </div>
+              <div class="network-right">
+                <span class="speed up">↑ {{ formatSpeed(agent.network_tx_rate) }}</span>
+                <span class="speed down">↓ {{ formatSpeed(agent.network_rx_rate) }}</span>
+              </div>
+            </div>
+
+            <!-- 累计流量 -->
+            <div class="network-card">
+              <div class="network-left">
+                <span class="network-icon">
+                  <n-icon><CloudUploadOutline /></n-icon>
+                </span>
+                <span class="network-label">累计流量</span>
+              </div>
+              <div class="network-right">
+                <span class="speed up">↑ {{ formatBytes(agent.network_tx_total) }}</span>
+                <span class="speed down">↓ {{ formatBytes(agent.network_rx_total) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <div v-if="!loading && agents.length === 0" class="empty-state">
+          <n-icon size="48" color="#ccc"><ServerOutline /></n-icon>
           <p>暂无服务器数据</p>
         </div>
       </n-spin>
     </main>
 
-    <PublicFooter />
+    <!-- 底部 -->
+    <footer class="footer">
+      <span>© 2025 Server Monitor · 保持洞察，稳定运行</span>
+      <span class="footer-right">
+        用 <n-icon color="#f59e0b" :size="14"><HeartOutline /></n-icon> 构建
+      </span>
+    </footer>
   </div>
 </template>
 
@@ -232,211 +316,417 @@ onMounted(() => {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #f8fafc;
+  background: #f9fafb;
 }
 
+/* 顶部导航 */
+.header {
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #3b82f6;
+  color: #fff;
+  border-radius: 8px;
+}
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.logo-subtitle {
+  font-size: 10px;
+  color: #f59e0b;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+}
+
+.logo-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-top: -2px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.last-update {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.update-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+}
+
+.nav-links {
+  display: flex;
+  gap: 4px;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  font-size: 13px;
+  color: #6b7280;
+  text-decoration: none;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+
+.nav-link:hover {
+  color: #1f2937;
+  background: #f3f4f6;
+}
+
+.nav-link.active {
+  color: #1f2937;
+  border-color: #e5e7eb;
+  background: #fff;
+}
+
+.github-link {
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+}
+
+.github-link:hover {
+  color: #1f2937;
+}
+
+/* 主内容 */
 .main-content {
   flex: 1;
-  max-width: 1280px;
+  max-width: 1400px;
   width: 100%;
   margin: 0 auto;
   padding: 24px;
 }
 
-.stats-bar {
-  display: flex;
-  gap: 32px;
-  margin-bottom: 24px;
-  padding: 16px 24px;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.stat-value {
-  font-size: 28px;
-  font-weight: 600;
-  color: #1e293b;
-}
-
-.stat-value.online {
-  color: #18a058;
-}
-
-.stat-value.offline {
-  color: #d03050;
-}
-
-.stat-label {
-  font-size: 13px;
-  color: #64748b;
-  margin-top: 4px;
-}
-
+/* 服务器卡片网格 */
 .server-grid {
-  margin-bottom: 24px;
+  display: grid;
+  gap: 20px;
 }
 
+.server-grid.grid {
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+}
+
+.server-grid.list {
+  grid-template-columns: 1fr;
+}
+
+/* 服务器卡片 */
 .server-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px 20px;
   cursor: pointer;
   transition: all 0.2s;
-  border-radius: 12px;
 }
 
 .server-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  border-color: #d1d5db;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-.server-card.list {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-
-.server-card.list .card-body {
-  flex: 1;
-  display: flex;
-  flex-direction: row;
-  gap: 24px;
-}
-
-.server-card.list .metrics-section {
-  flex: 1;
-}
-
-.server-card.list .network-section {
-  flex: 1;
-  margin-top: 0;
-  padding-top: 0;
-  border-top: none;
-}
-
+/* 卡片头部 */
 .card-header {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 16px;
-}
-
-.server-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.hostname {
-  font-size: 16px;
-  font-weight: 600;
-  color: #1e293b;
-}
-
-.location {
-  font-size: 12px;
-  color: #94a3b8;
-}
-
-.card-body {
-  margin-bottom: 16px;
-}
-
-.metrics-section .metric-row {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.metric-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.metric-header {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-}
-
-.metric-label {
-  font-size: 12px;
-  color: #64748b;
-}
-
-.metric-value {
-  font-size: 12px;
-  font-weight: 500;
-  color: #1e293b;
-}
-
-.network-section {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid #e2e8f0;
-}
-
-.network-speed {
-  display: flex;
   justify-content: space-between;
   margin-bottom: 8px;
 }
 
-.speed-item {
-  font-size: 13px;
-  color: #475569;
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.arrow {
+.server-name {
+  font-size: 15px;
   font-weight: 600;
+  color: #1f2937;
 }
 
-.arrow.up {
+.status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.status-tag.online {
+  color: #16a34a;
+  background: #f0fdf4;
+}
+
+.status-tag.offline {
+  color: #dc2626;
+  background: #fef2f2;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.status-tag.online .status-dot {
+  background: #22c55e;
+}
+
+.status-tag.offline .status-dot {
+  background: #ef4444;
+}
+
+.server-os {
+  font-size: 13px;
+  color: #2563eb;
+  font-weight: 500;
+}
+
+/* 信息行 */
+.info-row {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: #9ca3af;
+  margin-bottom: 14px;
+}
+
+.info-item.expire {
+  color: #f59e0b;
+}
+
+/* 资源指标行 */
+.metrics-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.metric-card {
+  flex: 1;
+  background: #f9fafb;
+  border: 1px solid #f3f4f6;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.metric-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.metric-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.metric-icon.cpu {
+  background: #eff6ff;
   color: #3b82f6;
 }
 
-.arrow.down {
-  color: #10b981;
+.metric-icon.memory {
+  background: #f0fdf4;
+  color: #22c55e;
 }
 
-.network-total {
-  display: flex;
-  justify-content: space-between;
+.metric-icon.disk {
+  background: #fefce8;
+  color: #eab308;
 }
 
-.total-item {
+.metric-label {
   font-size: 12px;
-  color: #94a3b8;
+  color: #6b7280;
 }
 
-.card-footer {
+.metric-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 6px;
+}
+
+.metric-bar {
+  height: 4px;
+  background: #e5e7eb;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.metric-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* 网络卡片 */
+.network-card {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  font-size: 12px;
-  color: #94a3b8;
-  padding-top: 12px;
-  border-top: 1px solid #f1f5f9;
+  background: #f9fafb;
+  border: 1px solid #f3f4f6;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
 }
 
+.network-card:last-child {
+  margin-bottom: 0;
+}
+
+.network-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.network-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  background: #fef3c7;
+  color: #f59e0b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.network-label {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.network-right {
+  display: flex;
+  gap: 12px;
+}
+
+.speed {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.speed.up {
+  color: #3b82f6;
+}
+
+.speed.down {
+  color: #22c55e;
+}
+
+/* 空状态 */
 .empty-state {
   text-align: center;
-  padding: 48px;
-  color: #94a3b8;
+  padding: 60px 20px;
+  color: #9ca3af;
 }
 
+.empty-state p {
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+/* 底部 */
+.footer {
+  background: #fff;
+  border-top: 1px solid #e5e7eb;
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+.footer-right {
+  color: #f59e0b;
+}
+
+/* 响应式 */
 @media (max-width: 768px) {
-  .stats-bar {
-    gap: 16px;
-    padding: 12px 16px;
+  .header-inner {
+    flex-direction: column;
+    gap: 12px;
   }
 
-  .stat-value {
-    font-size: 24px;
+  .header-right {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .nav-links {
+    display: none;
+  }
+
+  .server-grid.grid {
+    grid-template-columns: 1fr;
+  }
+
+  .metrics-row {
+    flex-wrap: wrap;
+  }
+
+  .metric-card {
+    min-width: calc(50% - 5px);
   }
 
   .main-content {

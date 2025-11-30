@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Events\AgentStatusChanged;
 use App\Models\Agent;
+use App\Models\ApiKey;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Log;
 
@@ -21,9 +22,10 @@ class AgentService
      * 注册或更新探针
      *
      * @param array $data
+     * @param ApiKey|null $apiKey 用于绑定的 API Key
      * @return array ['agent' => Agent, 'isNew' => bool]
      */
-    public function register(array $data): array
+    public function register(array $data, ?ApiKey $apiKey = null): array
     {
         $agent = Agent::where('hostname', $data['hostname'])
             ->where('ip', $data['ip'])
@@ -55,6 +57,13 @@ class AgentService
             'version' => $data['version'] ?? '',
             'status' => 1,
         ]);
+
+        // 如果 API Key 未绑定，则绑定到新注册的 Agent
+        if ($apiKey && empty($apiKey->agent_id)) {
+            $apiKey->agent_id = $agent->id;
+            $apiKey->save();
+            Log::info("API Key [{$apiKey->name}] 已绑定到探针: {$agent->hostname}");
+        }
 
         Log::info("新探针已注册: {$agent->hostname} ({$agent->ip})");
 
@@ -130,8 +139,8 @@ class AgentService
             $agent->disk_usage = $metrics['disk']->usage_percent ?? 0;
             $agent->network_tx_rate = $metrics['network']->bytes_sent_rate ?? 0;
             $agent->network_rx_rate = $metrics['network']->bytes_recv_rate ?? 0;
-            $agent->network_tx_total = $metrics['network']->bytes_sent ?? 0;
-            $agent->network_rx_total = $metrics['network']->bytes_recv ?? 0;
+            $agent->network_tx_total = $metrics['network']->bytes_sent_total ?? 0;
+            $agent->network_rx_total = $metrics['network']->bytes_recv_total ?? 0;
 
             return $agent;
         });

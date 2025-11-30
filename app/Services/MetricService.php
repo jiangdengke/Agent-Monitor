@@ -158,8 +158,8 @@ class MetricService
                 'disk_usage' => $metrics['disk']->usage_percent ?? 0,
                 'network_tx_rate' => $metrics['network']->bytes_sent_rate ?? 0,
                 'network_rx_rate' => $metrics['network']->bytes_recv_rate ?? 0,
-                'network_tx_total' => $metrics['network']->bytes_sent ?? 0,
-                'network_rx_total' => $metrics['network']->bytes_recv ?? 0,
+                'network_tx_total' => $metrics['network']->bytes_sent_total ?? 0,
+                'network_rx_total' => $metrics['network']->bytes_recv_total ?? 0,
                 'load1' => $metrics['load']->load1 ?? 0,
             ];
 
