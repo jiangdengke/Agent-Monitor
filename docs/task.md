@@ -22,7 +22,7 @@ Agent (Go) --HTTP POST--> Laravel --> PostgreSQL
 - [x] **M1**：探针可以注册和发送心跳 ✅
 - [x] **M2**：指标数据正常上报和存储 ✅
 - [ ] **M3**：前端实时更新工作正常
-- [ ] **M4**：监控任务配置下发并执行
+- [x] **M4**：监控任务配置下发并执行 ✅
 - [x] **M5**：告警系统正常触发和通知 ✅
 - [x] **MVP**：基本功能可用，可对接真实 Agent ✅
 
@@ -113,12 +113,16 @@ Agent (Go) --HTTP POST--> Laravel --> PostgreSQL
 - [x] CPU 采集器（使用 gopsutil）
 - [x] 内存采集器
 - [x] 磁盘采集器
-- [x] 磁盘 IO 采集器
-- [x] 网络采集器
+- [x] 磁盘 IO 采集器（含读写速率）
+- [x] 网络采集器（含发送/接收速率）
 - [x] 系统负载采集器
 - [x] 主机信息采集器
-- [ ] GPU 采集器（可选）
-- [ ] 温度采集器（可选）
+- [x] GPU 采集器
+- [x] 温度采集器
+
+### 监控任务执行
+- [x] HTTP 监控（状态码、响应时间、SSL 证书）
+- [x] TCP 监控（端口连通性、响应时间）
 
 ### 定时上报
 - [x] 定时采集并发送指标（可配置间隔）
@@ -126,9 +130,9 @@ Agent (Go) --HTTP POST--> Laravel --> PostgreSQL
 - [x] 优雅退出
 
 ### 系统服务
-- [ ] 支持安装为 systemd 服务（Linux）
-- [ ] 支持 Windows 服务
-- [ ] 命令行工具（register、start、stop 等）
+- [x] 支持安装为 systemd 服务（Linux）
+- [x] 支持 Windows 服务
+- [x] 命令行工具（install/uninstall/start/stop/restart/status）
 
 ---
 
@@ -154,16 +158,40 @@ Agent (Go) --HTTP POST--> Laravel --> PostgreSQL
 
 ---
 
-## 第 6 阶段：监控任务（HTTP/TCP）⏳ 待做
+## 第 6 阶段：监控任务（HTTP/TCP）✅ 完成
 
-- [ ] `MonitorTask` CRUD API
-- [ ] Agent 获取任务列表 API (`GET /api/agent/tasks`)
-- [ ] Agent 执行 HTTP/TCP 监控
-- [ ] Agent 上报监控结果 API
+- [x] `MonitorTask` CRUD API
+- [x] Agent 获取任务列表 API (`GET /api/agents/{agentId}/monitors`)
+- [x] Agent 执行 HTTP/TCP 监控
+- [x] Agent 上报监控结果 API (`POST /api/monitor-metrics`)
+- [x] 监控统计数据 API
 
 ---
 
-## 第 7 阶段：前端界面（可选）⏳ 待做
+## 第 7 阶段：后端管理 API ✅ 完成
+
+### 代码重构
+- [x] Controller → Service 分层重构
+- [x] MetricService（指标存储和查询）
+- [x] AgentService（探针管理）
+- [x] AlertService（告警 CRUD）
+
+### API Key 管理
+- [x] API Key CRUD API
+- [x] 启用/禁用 API Key
+- [x] 重新生成 API Key
+
+### 指标查询
+- [x] 历史指标查询 API
+- [x] 最新指标查询 API
+
+### 属性配置
+- [x] 属性配置 CRUD API
+- [x] 批量配置 API
+
+---
+
+## 第 8 阶段：前端界面（可选）⏳ 待做
 
 - [ ] 探针列表页面
 - [ ] 探针详情页面
@@ -174,7 +202,7 @@ Agent (Go) --HTTP POST--> Laravel --> PostgreSQL
 
 ---
 
-## 第 8 阶段：性能优化 ⏳ 待做
+## 第 9 阶段：性能优化 ⏳ 待做
 
 - [ ] 安装 TimescaleDB 扩展（PostgreSQL）
 - [ ] 将 `metrics` 表转为 Hypertable
@@ -185,7 +213,7 @@ Agent (Go) --HTTP POST--> Laravel --> PostgreSQL
 
 ---
 
-## 第 9 阶段：部署准备 ⏳ 待做
+## 第 10 阶段：部署准备 ⏳ 待做
 
 - [ ] 编写 `Dockerfile`
 - [ ] 编写 `docker-compose.yml`
@@ -198,6 +226,17 @@ Agent (Go) --HTTP POST--> Laravel --> PostgreSQL
 ---
 
 ## 📝 进度记录
+
+### 2025-11-30
+- [x] Agent 添加 GPU、温度采集器
+- [x] Agent 添加 HTTP/TCP 监控执行功能
+- [x] Agent 添加命令行工具和系统服务支持
+- [x] Agent 补充网络速率、磁盘 IO 速率采集
+- [x] 后端 Controller → Service 分层重构
+- [x] 后端添加 MonitorService/MonitorController
+- [x] 后端添加 ApiKeyService/ApiKeyController
+- [x] 后端添加 PropertyService/PropertyController
+- [x] 后端添加最新指标查询 API
 
 ### 2025-11-26
 - [x] 完成 HTTP API 架构决策
