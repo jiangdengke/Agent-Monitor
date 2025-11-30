@@ -24,8 +24,17 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # 设置工作目录
 WORKDIR /var/www/html
 
+# 先复制 composer 文件以利用缓存
+COPY composer.json composer.lock ./
+
+# 安装 PHP 依赖
+RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
+
 # 复制项目文件
 COPY . .
+
+# 生成 autoloader
+RUN composer dump-autoload --optimize
 
 # 设置权限
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache

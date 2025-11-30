@@ -24,9 +24,8 @@ docker-compose up -d --build
 echo "[3/5] 等待数据库就绪..."
 sleep 5
 
-# 安装依赖并初始化
+# 初始化应用（依赖已在构建时安装）
 echo "[4/5] 初始化应用..."
-docker-compose exec -T app composer install --no-interaction --prefer-dist --optimize-autoloader
 docker-compose exec -T app php artisan migrate --force
 docker-compose exec -T app php artisan config:clear
 docker-compose exec -T app php artisan cache:clear

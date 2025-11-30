@@ -28,8 +28,7 @@ jobs:
             # 重新构建并启动容器
             docker-compose up -d --build
 
-            # 在容器内执行
-            docker-compose exec -T app composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+            # 在容器内执行（依赖已在构建时安装）
             docker-compose exec -T app php artisan migrate --force
             docker-compose exec -T app php artisan config:clear
             docker-compose exec -T app php artisan cache:clear
