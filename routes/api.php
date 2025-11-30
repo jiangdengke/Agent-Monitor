@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\MetricController;
 use App\Http\Controllers\Api\AlertController;
 use App\Http\Controllers\Api\MonitorController;
 use App\Http\Controllers\Api\ApiKeyController;
+use App\Http\Controllers\Api\PropertyController;
 
 Route::middleware('auth.apikey')->group(function () {
     // Agent路由
@@ -69,5 +70,14 @@ Route::middleware('auth.apikey')->group(function () {
         Route::post('/{id}/enable', [ApiKeyController::class, 'enable']);
         Route::post('/{id}/disable', [ApiKeyController::class, 'disable']);
         Route::post('/{id}/regenerate', [ApiKeyController::class, 'regenerate']);
+    });
+
+    // 属性配置路由
+    Route::prefix('properties')->group(function () {
+        Route::get('/', [PropertyController::class, 'index']);
+        Route::post('/', [PropertyController::class, 'store']);
+        Route::post('/batch', [PropertyController::class, 'batchStore']);
+        Route::get('/{id}', [PropertyController::class, 'show']);
+        Route::delete('/{id}', [PropertyController::class, 'destroy']);
     });
 });
