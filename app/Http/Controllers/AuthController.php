@@ -2,13 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ResponseCodeEnum;
 use App\Models\User;
+use App\Services\TokenService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
+use Jiannei\Response\Laravel\Support\Facades\Response;
 
 class AuthController extends Controller
 {
+    public function __construct(
+        private TokenService $tokenService
+    ) {}
+
     /**
      * 用户注册
      */
@@ -18,6 +24,14 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6|confirmed',
+        ], [
+            'name.required' => '请输入用户名',
+            'email.required' => '请输入邮箱',
+            'email.email' => '邮箱格式不正确',
+            'email.unique' => '该邮箱已被注册',
+            'password.required' => '请输入密码',
+            'password.min' => '密码至少6位',
+            'password.confirmed' => '两次密码不一致',
         ]);
 
         $user = User::create([
@@ -26,12 +40,12 @@ class AuthController extends Controller
             'password' => $validated['password'],
         ]);
 
-        $token = $user->createToken('auth-token')->plainTextToken;
+        $token = $this->tokenService->createToken($user);
 
-        return $this->success([
+        return Response::success([
             'user' => $user,
             'token' => $token,
-        ], '注册成功');
+        ], '', ResponseCodeEnum::AUTH_REGISTER_SUCCESS);
     }
 
     /**
@@ -42,22 +56,24 @@ class AuthController extends Controller
         $validated = $request->validate([
             'email' => 'required|string|email',
             'password' => 'required|string',
+        ], [
+            'email.required' => '请输入邮箱',
+            'email.email' => '邮箱格式不正确',
+            'password.required' => '请输入密码',
         ]);
 
         $user = User::where('email', $validated['email'])->first();
 
         if (!$user || !Hash::check($validated['password'], $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['邮箱或密码错误'],
-            ]);
+            return Response::fail('', ResponseCodeEnum::AUTH_INVALID_CREDENTIALS);
         }
 
-        $token = $user->createToken('auth-token')->plainTextToken;
+        $token = $this->tokenService->createToken($user);
 
-        return $this->success([
+        return Response::success([
             'user' => $user,
             'token' => $token,
-        ], '登录成功');
+        ], '', ResponseCodeEnum::AUTH_LOGIN_SUCCESS);
     }
 
     /**
@@ -65,9 +81,12 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        $token = $request->bearerToken();
+        if ($token) {
+            $this->tokenService->deleteToken($token);
+        }
 
-        return $this->success(null, '登出成功');
+        return Response::success(null, '', ResponseCodeEnum::AUTH_LOGOUT_SUCCESS);
     }
 
     /**
@@ -75,6 +94,6 @@ class AuthController extends Controller
      */
     public function me(Request $request)
     {
-        return $this->success($request->user());
+        return Response::success($request->user());
     }
 }

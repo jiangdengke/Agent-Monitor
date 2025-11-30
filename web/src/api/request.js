@@ -2,7 +2,10 @@ import axios from 'axios'
 
 const request = axios.create({
   baseURL: '/api',
-  timeout: 10000
+  timeout: 10000,
+  headers: {
+    'Accept': 'application/json'
+  }
 })
 
 request.interceptors.request.use(

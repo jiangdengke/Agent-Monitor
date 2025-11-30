@@ -81,7 +81,7 @@ import { h } from 'vue'
       class="layout-sider"
     >
       <div class="logo">
-        <img src="/logo.png" alt="Logo" class="logo-img" />
+        <n-icon size="24" color="#fff"><ServerOutline /></n-icon>
         <span v-if="!collapsed" class="logo-text">监控平台</span>
       </div>
       <n-menu

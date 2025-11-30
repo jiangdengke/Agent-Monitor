@@ -86,4 +86,16 @@ enum ResponseCodeEnum: int
     // 服务端错误
     case ALERT_SEND_FAILED = 500501;
     case ALERT_CHANNEL_ERROR = 500502;
+
+    // ==================== Auth 用户认证模块（6xx）====================
+    // 成功
+    case AUTH_REGISTER_SUCCESS = 200601;
+    case AUTH_LOGIN_SUCCESS = 200602;
+    case AUTH_LOGOUT_SUCCESS = 200603;
+
+    // 客户端错误
+    case AUTH_INVALID_CREDENTIALS = 400601;
+    case AUTH_EMAIL_EXISTS = 400602;
+    case AUTH_TOKEN_INVALID = 400603;
+    case AUTH_TOKEN_EXPIRED = 400604;
 }
